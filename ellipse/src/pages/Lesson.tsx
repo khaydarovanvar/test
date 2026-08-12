@@ -195,6 +195,7 @@ function VocabPlayer({ lvl, unit }: { lvl: LevelId; unit: VocabUnit }) {
                 <div className="text-xl font-extrabold text-brand-600 dark:text-brand-400">{meaning(w)}</div>
                 {s.uiLang === "en" && <div className="text-sm text-ink-2 dark:text-slate-400 mt-0.5">{w.uz} · {w.ru}</div>}
                 <div className="text-sm italic text-ink-2 dark:text-slate-400 mt-2">“{w.ex}”</div>
+                {w.syn && <div className="text-xs text-ink-2 dark:text-slate-400 mt-1">≈ {w.syn}{w.ant ? ` · ≠ ${w.ant}` : ""}</div>}
                 <div className="flex gap-2.5 mt-6">
                   <Button className="flex-1" onClick={() => { learnWord(lvl, unit.id, w.w, true); setCi(ci + 1); setRevealed(false); }}>✓ {t("know_it")}</Button>
                   <Button className="flex-1" variant="secondary" onClick={() => { learnWord(lvl, unit.id, w.w, false); setCi(ci + 1); setRevealed(false); }}>{t("still_learning")}</Button>
@@ -220,6 +221,12 @@ function VocabPlayer({ lvl, unit }: { lvl: LevelId; unit: VocabUnit }) {
               <div className="text-xs text-ink-2 dark:text-slate-400">{w.ipa}</div>
               <div className="text-[13.5px] mt-0.5">{meaning(w)}{s.uiLang === "en" && <span className="text-ink-2 dark:text-slate-400"> · {w.uz} · {w.ru}</span>}</div>
               <div className="text-xs italic text-slate-400 mt-0.5">“{w.ex}”</div>
+              {(w.syn || w.ant) && (
+                <div className="text-[11.5px] text-ink-2 dark:text-slate-400 mt-1">
+                  {w.syn && <span className="mr-2">≈ {w.syn}</span>}
+                  {w.ant && <span>≠ {w.ant}</span>}
+                </div>
+              )}
             </div>
             <SpeakButton text={`${w.w}. ${w.ex}`} />
           </div>

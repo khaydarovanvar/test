@@ -229,7 +229,7 @@ export function QuizRunner({ questions, onAnswer, onDone, translateExpl }: {
         <span className="text-xs font-bold text-ink-2 dark:text-slate-400 tabular-nums">{idx + 1}/{questions.length}</span>
       </div>
       <div key={idx} className="animate-rise">
-        <p className="text-[17px] font-bold leading-relaxed mb-4">{q.q}</p>
+        <p className="text-[17px] font-bold leading-relaxed mb-4 whitespace-pre-line">{q.q}</p>
         <div className="space-y-2.5">
           {q.o.map((o, i) => {
             let cls = "border-mist dark:border-night-700 bg-surface dark:bg-night-900 hover:border-brand-500/60";

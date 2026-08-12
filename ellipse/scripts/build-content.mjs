@@ -3,9 +3,14 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { LEAD_TR } from "./lead-translations.mjs";
+import { C1_LISTENING, EXTRA_SCENARIOS, GRAMMAR_PRACTICE, READING_SETS } from "./uz-extras.mjs";
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const rich = JSON.parse(readFileSync(join(root, "content-src/eng_rich.json"), "utf8"));
 const placementSrc = JSON.parse(readFileSync(join(root, "content-src/placement.json"), "utf8"));
+const satVocab = JSON.parse(readFileSync(join(root, "content-src/sat_vocab.json"), "utf8"));
+const satEnglish = JSON.parse(readFileSync(join(root, "content-src/sat_english.json"), "utf8"));
 
 const LEVEL_META = {
   A1: { name: "Beginner", tagline: "Build your English foundation", weeks: 8, color: "emerald" },
@@ -30,7 +35,7 @@ function grammarLessons(lvl) {
     const trans = tr[l.id] || {};
     return {
       id: l.id, title: l.title, lead: strip(l.lead),
-      leadTr: trans.lead || null,
+      leadTr: trans.lead || LEAD_TR[lvl]?.[l.id] || null,
       situation: strip(extra.situation || ""),
       blocks: (l.blocks || []).map((b) => ({ h: strip(b.h), p: (b.p || []).map(strip), ex: (b.ex || []).map(strip) })),
       tip: strip(l.tip || ""),
@@ -290,7 +295,62 @@ const levels = ["A1", "A2", "B1", "B2", "C1"].map((lvl) => {
   };
 });
 
-const out = { levels, placement, scenarios: SCENARIOS };
+/* ---------------- enrichment from the shared question/vocab bank ---------------- */
+const usable = (q) => !/chart|graph|table|figure|diagram|axis|SAT/i.test(q[0]) && !/SAT/i.test(q[7] || "");
+const toQuiz = (q) => ({ q: strip(q[0]), o: q[1].map(strip), a: q[2], e: strip(q[7] || ""), d: (q[3] || "Medium").toLowerCase() });
+const used = new Set();
+function takeQuestions(domain, count, { topic, diff } = {}) {
+  const pool = (satEnglish[domain] || []).filter((q) =>
+    usable(q) && !used.has(q[0]) &&
+    (!topic || q[4] === topic) &&
+    (!diff || diff.includes(q[3])) &&
+    String(q[0]).length < 1400);
+  const picked = pool.slice(0, count);
+  picked.forEach((q) => used.add(q[0]));
+  return picked.map(toQuiz);
+}
+
+// 1) Trilingual academic vocabulary: 25 units → B1 (1–8), B2 (9–17), C1 (18–25)
+const toUnit = (u, n) => ({
+  id: `sv${u.unit}`, title: `Academic words · Set ${n}`,
+  words: u.words.map((w) => ({
+    w: w.word, pos: w.pos, ipa: w.pron ? `/${w.pron}/` : "", uz: w.uz, ru: w.ru,
+    def: w.def || "", ex: w.sentence || "", syn: w.syn || "", ant: w.ant || "",
+  })),
+});
+const vocabFor = (lvl) => {
+  const range = { B1: [0, 8], B2: [8, 17], C1: [17, 25] }[lvl];
+  return range ? satVocab.slice(range[0], range[1]).map((u, i) => toUnit(u, i + 1)) : [];
+};
+
+// 2) Grammar-practice lessons from convention/craft topics (with uz/ru leads)
+const practiceLesson = (def) => ({
+  id: def.id, title: def.title, lead: def.lead, leadTr: def.leadTr, situation: "",
+  blocks: [], tip: "", examples: [], mistakes: [],
+  quiz: takeQuestions(def.pick[0], def.pick[2], { topic: def.pick[1] }),
+});
+
+// 3) Reading sets: passage-based question collections
+const readingSet = (def) => ({
+  id: def.id, title: def.title,
+  text: "Each task below contains its own short passage. Read it closely, then answer — this trains exactly the kind of reading you will meet in real academic texts and exams.\n\nQuyida har bir topshiriqning o'z qisqa matni bor. Diqqat bilan o'qing, so'ng javob bering.",
+  quiz: takeQuestions(def.domain, def.count, { topic: def.topic, diff: def.diff }),
+});
+
+for (const level of levels) {
+  const extraVocab = vocabFor(level.id);
+  if (extraVocab.length) level.skills.vocabulary = [...level.skills.vocabulary, ...extraVocab];
+  const gp = GRAMMAR_PRACTICE[level.id];
+  if (gp) level.skills.grammar = [...level.skills.grammar, ...gp.map(practiceLesson).filter((l) => l.quiz.length >= 6)];
+  const rs = READING_SETS[level.id];
+  if (rs) level.skills.reading = [...level.skills.reading, ...rs.map(readingSet).filter((l) => l.quiz.length >= 3)];
+  if (level.id === "C1") level.skills.listening = [...level.skills.listening, ...C1_LISTENING];
+}
+
+const out = { levels, placement, scenarios: [...SCENARIOS, ...EXTRA_SCENARIOS] };
+const blob = JSON.stringify(out);
+const satHits = (blob.match(/\bSAT\b/g) || []).length;
+if (satHits) console.warn(`WARNING: ${satHits} 'SAT' mentions leaked into content`);
 mkdirSync(join(root, "src/content"), { recursive: true });
 writeFileSync(join(root, "src/content/content.json"), JSON.stringify(out));
 const counts = levels.map((l) => `${l.id}: g${l.skills.grammar.length} v${l.skills.vocabulary.length} r${l.skills.reading.length} li${l.skills.listening.length} s${l.skills.speaking.length} w${l.skills.writing.length}`);

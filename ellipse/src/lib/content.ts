@@ -13,7 +13,7 @@ export interface GrammarLesson {
   mistakes: { x: string; v: string }[];
   quiz: QuizQ[];
 }
-export interface Word { w: string; pos: string; ipa: string; uz: string; ru: string; def: string; ex: string }
+export interface Word { w: string; pos: string; ipa: string; uz: string; ru: string; def: string; ex: string; syn?: string; ant?: string }
 export interface VocabUnit { id: string; title: string; words: Word[] }
 export interface ReadingLesson { id: string; title: string; text: string; quiz: QuizQ[] }
 export interface ListeningLesson { id: string; title: string; script: string; quiz: QuizQ[] }
