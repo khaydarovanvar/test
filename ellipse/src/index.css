@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --color-brand-950: #042f24;
+  --color-brand-900: #064e3b;
+  --color-brand-700: #047857;
+  --color-brand-600: #059669;
+  --color-brand-500: #10b981;
+  --color-brand-400: #34d399;
+  --color-brand-100: #d1fae5;
+  --color-brand-50: #ecfdf5;
+
+  --color-accent-600: #d97706;
+  --color-accent-500: #f59e0b;
+  --color-accent-400: #fbbf24;
+  --color-accent-100: #fef3c7;
+
+  --color-surface: #ffffff;
+  --color-canvas: #f8fafc;
+  --color-ink: #0f172a;
+  --color-ink-2: #475569;
+  --color-mist: #e2e8f0;
+
+  --color-night-950: #07130f;
+  --color-night-900: #0d1f18;
+  --color-night-800: #102a20;
+  --color-night-700: #17372b;
+
+  --radius-card: 20px;
+  --radius-btn: 14px;
+
+  --shadow-soft: 0 1px 2px rgb(6 78 59 / 0.04), 0 10px 32px -12px rgb(6 78 59 / 0.14);
+  --shadow-lift: 0 2px 6px rgb(6 78 59 / 0.06), 0 18px 44px -14px rgb(6 78 59 / 0.22);
+
+  --animate-pop: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  --animate-rise: rise 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  --animate-shake: shake 0.4s ease both;
+  --animate-glow: glow 1.8s ease-in-out infinite;
+
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes rise {
+    0% { transform: translateY(14px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  @keyframes glow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+}
+
+html, body, #root { height: 100%; }
+body {
+  @apply bg-canvas text-ink antialiased dark:bg-night-950 dark:text-slate-100;
+  overscroll-behavior-y: none;
+}
+
+/* thin scrollbars for desktop panels */
+* { scrollbar-width: thin; scrollbar-color: rgb(100 116 139 / 0.35) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
