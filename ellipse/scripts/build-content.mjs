@@ -5,6 +5,23 @@ import { fileURLToPath } from "node:url";
 
 import { LEAD_TR } from "./lead-translations.mjs";
 import { C1_LISTENING, EXTRA_SCENARIOS, GRAMMAR_PRACTICE, READING_SETS } from "./uz-extras.mjs";
+import { A2_TR_1 } from "./deep-tr-a2-1.mjs";
+import { A2_TR_2 } from "./deep-tr-a2-2.mjs";
+import { B1_TR_1 } from "./deep-tr-b1-1.mjs";
+import { B1_TR_2 } from "./deep-tr-b1-2.mjs";
+import { B2_TR_1 } from "./deep-tr-b2-1.mjs";
+import { B2_TR_2 } from "./deep-tr-b2-2.mjs";
+import { QUIZ_TR } from "./quiz-tr.mjs";
+import { C1_LISTENING_TR, EXTRA_LISTENING, EXTRA_READING } from "./new-content.mjs";
+import { C1_TR } from "./deep-tr-c1.mjs";
+
+// Hand-authored full lesson translations (situation, tip, blocks, quiz) for levels
+// whose source data ships without a TR section.
+const DEEP_TR = {
+  A2: { ...A2_TR_1, ...A2_TR_2 },
+  B1: { ...B1_TR_1, ...B1_TR_2 },
+  B2: { ...B2_TR_1, ...B2_TR_2 },
+};
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const rich = JSON.parse(readFileSync(join(root, "content-src/eng_rich.json"), "utf8"));
@@ -47,7 +64,7 @@ function grammarLessons(lvl) {
       tip: stripPair(trans.tip),
       blocks: (trans.blocks || []).map((b) => ({ h: stripPair(b.h), p: (b.p || []).map(stripPair) })),
       quiz: (trans.q || []).map(stripPair),
-    } : null;
+    } : (DEEP_TR[lvl]?.[l.id] || null);
     // merge the base examples with the extended GMORE example set (dedupe)
     const baseEx = (l.examples || []).map(strip);
     const extraEx = (extra.examples || []).map(strip).filter((x) => !baseEx.includes(x));
@@ -79,7 +96,7 @@ function vocabUnits(lvl) {
 
 const quizTrFor = (lvl, id) => {
   const q = rich[lvl].TR?.[id]?.q;
-  return q ? q.map(stripPair) : null;
+  return q ? q.map(stripPair) : (QUIZ_TR[lvl]?.[id] || null);
 };
 const readingLessons = (lvl) => (rich[lvl].READING || []).map((l) => ({ id: l.id, title: l.title, text: l.text, quiz: mapQuiz(l.q), quizTr: quizTrFor(lvl, l.id) }));
 const listeningLessons = (lvl) => (rich[lvl].LISTENING || []).map((l) => ({ id: l.id, title: l.title, script: l.script, quiz: mapQuiz(l.q), quizTr: quizTrFor(lvl, l.id) }));
@@ -313,7 +330,7 @@ const levels = ["A1", "A2", "B1", "B2", "C1"].map((lvl) => {
   return {
     id: lvl, name: meta.name, tagline: meta.tagline, weeks: meta.weeks,
     skills: {
-      grammar: isC1 ? C1_GRAMMAR : grammarLessons(lvl),
+      grammar: isC1 ? C1_GRAMMAR.map((l) => ({ ...l, tr: C1_TR[l.id] || null })) : grammarLessons(lvl),
       vocabulary: isC1 ? C1_VOCAB : vocabUnits(lvl),
       reading: isC1 ? [] : readingLessons(lvl),
       listening: isC1 ? [] : listeningLessons(lvl),
@@ -405,13 +422,17 @@ const STRATEGY = {
 };
 
 for (const level of levels) {
+  const xr = EXTRA_READING[level.id];
+  if (xr) level.skills.reading = [...level.skills.reading, ...xr];
+  const xl = EXTRA_LISTENING[level.id];
+  if (xl) level.skills.listening = [...level.skills.listening, ...xl];
   const extraVocab = vocabFor(level.id);
   if (extraVocab.length) level.skills.vocabulary = [...level.skills.vocabulary, ...extraVocab];
   const gp = GRAMMAR_PRACTICE[level.id];
   if (gp) level.skills.grammar = [...level.skills.grammar, ...gp.map(practiceLesson).filter((l) => l.quiz.length >= 6)];
   const rs = READING_SETS[level.id];
   if (rs) level.skills.reading = [...level.skills.reading, ...rs.map(readingSet).filter((l) => l.quiz.length >= 3)];
-  if (level.id === "C1") level.skills.listening = [...level.skills.listening, ...C1_LISTENING];
+  if (level.id === "C1") level.skills.listening = [...C1_LISTENING.map((l) => ({ ...l, quizTr: C1_LISTENING_TR[l.id] || null })), ...level.skills.listening];
   const stR = STRATEGY.reading[level.id];
   if (stR) level.skills.reading = [...level.skills.reading, ...stR.filter((l) => l.quiz.length >= 3)];
   const stG = STRATEGY.grammar[level.id];
