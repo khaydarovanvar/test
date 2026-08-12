@@ -25,7 +25,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const content = JSON.parse(readFileSync(join(root, "src/content/content.json"), "utf8"));
 
 const API_KEY = process.env.ELEVENLABS_API_KEY;
-const VOICE_F = process.env.ELEVEN_VOICE_F || "21m00Tcm4TlvDq8ikWAM"; // Rachel
+const VOICE_F = process.env.ELEVEN_VOICE_F || "EXAVITQu4vr4xnSDxMaL"; // Sarah (free-tier premade)
 const VOICE_M = process.env.ELEVEN_VOICE_M || "pNInz6obpgDQGcFmaJgB"; // Adam
 const args = process.argv.slice(2);
 const LIMIT = args.includes("--limit") ? parseInt(args[args.indexOf("--limit") + 1], 10) : Infinity;
