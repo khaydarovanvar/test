@@ -41,13 +41,21 @@ function grammarLessons(lvl) {
       blocks: (trans.blocks || []).map((b) => ({ h: stripPair(b.h), p: (b.p || []).map(stripPair) })),
       quiz: (trans.q || []).map(stripPair),
     } : null;
+    // merge the base examples with the extended GMORE example set (dedupe)
+    const baseEx = (l.examples || []).map(strip);
+    const extraEx = (extra.examples || []).map(strip).filter((x) => !baseEx.includes(x));
     return {
       id: l.id, title: l.title, lead: strip(l.lead),
       leadTr: stripPair(trans.lead) || LEAD_TR[lvl]?.[l.id] || null,
       situation: strip(extra.situation || ""),
+      timeline: extra.timeline ? { art: extra.timeline.art || [], note: strip(extra.timeline.note || "") } : null,
+      compare: extra.compare ? {
+        a: { h: strip(extra.compare.a?.h || ""), ex: (extra.compare.a?.ex || []).map(strip) },
+        b: { h: strip(extra.compare.b?.h || ""), ex: (extra.compare.b?.ex || []).map(strip) },
+      } : null,
       blocks: (l.blocks || []).map((b) => ({ h: strip(b.h), p: (b.p || []).map(strip), ex: (b.ex || []).map(strip) })),
       tip: strip(l.tip || ""),
-      examples: (l.examples || []).map(strip),
+      examples: [...baseEx, ...extraEx],
       mistakes: (extra.mistakes || []).map((m) => ({ x: strip(m.x), v: strip(m.v) })),
       quiz: mapQuiz(l.q),
       tr: fullTr,

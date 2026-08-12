@@ -3,6 +3,7 @@ import { getState } from "./store";
 type Dict = Record<string, string>;
 
 const EN: Dict = {
+  timeline: "Timeline", compare: "Compare", questions_n: "questions", est: "est.", your_accuracy: "your accuracy", done_of: "done",
   recommended_later: "Best after {lvl}", set_my_level: "Set as my level",
   // nav
   nav_home: "Home", nav_learn: "Learn", nav_practice: "Practice", nav_progress: "Progress", nav_profile: "Profile",
@@ -83,6 +84,7 @@ const EN: Dict = {
 };
 
 const RU: Dict = {
+  timeline: "Хронология", compare: "Сравните", questions_n: "вопросов", est: "≈", your_accuracy: "ваша точность", done_of: "пройдено",
   recommended_later: "Лучше после {lvl}", set_my_level: "Сделать моим уровнем",
   nav_home: "Главная", nav_learn: "Учёба", nav_practice: "Практика", nav_progress: "Прогресс", nav_profile: "Профиль",
   continue: "Продолжить", start: "Начать", next: "Дальше", check: "Проверить", finish: "Завершить", back: "Назад",
@@ -149,6 +151,7 @@ const RU: Dict = {
 };
 
 const UZ: Dict = {
+  timeline: "Vaqt chizig'i", compare: "Solishtiring", questions_n: "ta savol", est: "≈", your_accuracy: "sizning aniqligingiz", done_of: "bajarildi",
   recommended_later: "{lvl} dan keyin tavsiya etiladi", set_my_level: "Buni mening darajam qilish",
   nav_home: "Asosiy", nav_learn: "Darslar", nav_practice: "Mashq", nav_progress: "Progress", nav_profile: "Profil",
   continue: "Davom etish", start: "Boshlash", next: "Keyingisi", check: "Tekshirish", finish: "Yakunlash", back: "Orqaga",

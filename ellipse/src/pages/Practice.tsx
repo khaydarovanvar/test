@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { X, Zap, Shuffle, ArrowRight } from "lucide-react";
-import { useApp, go, back, recordAnswer, addXp, dueWords } from "../lib/store";
+import { useApp, go, back, recordAnswer, addXp, dueWords, skillScore } from "../lib/store";
 import { level as getLevel, type LevelId, type SkillId, type QuizQ, type Word } from "../lib/content";
 import { t } from "../lib/i18n";
-import { Card, Button, Chip, QuizRunner, SectionTitle, Ellie, ProgressRing } from "../components/ui";
+import { Card, Button, Chip, QuizRunner, SectionTitle, Ellie, ProgressRing, ProgressBar } from "../components/ui";
 
 type Diff = "all" | "easy" | "medium" | "hard";
 
@@ -33,18 +33,30 @@ export default function PracticePage() {
   return <Hub />;
 }
 
+function countFor(lvl: LevelId, skill: SkillId | "mixed"): number {
+  const L = getLevel(lvl);
+  let n = 0;
+  if (skill === "grammar" || skill === "mixed") L.skills.grammar.forEach((l) => (n += l.quiz.length));
+  if (skill === "reading" || skill === "mixed") L.skills.reading.forEach((l) => (n += l.quiz.length));
+  if (skill === "listening" || skill === "mixed") L.skills.listening.forEach((l) => (n += l.quiz.length));
+  if (skill === "vocabulary" || skill === "mixed") L.skills.vocabulary.forEach((u) => (n += u.words.length));
+  return n;
+}
+
 function Hub() {
   const s = useApp();
   const due = dueWords(s);
   const [diff, setDiff] = useState<Diff>("all");
-  const modes: { id: string; icon: string; title: string; sub: string; skill?: SkillId | "mixed" }[] = [
-    { id: "quick", icon: "⚡", title: t("quick"), sub: t("quick_sub"), skill: "mixed" },
-    { id: "mixed", icon: "🔀", title: t("mixed"), sub: t("mixed_sub"), skill: "mixed" },
-    { id: "grammar", icon: "📘", title: t("grammar"), sub: `${t("by_skill")}`, skill: "grammar" },
-    { id: "vocabulary", icon: "🃏", title: t("vocabulary"), sub: `${t("by_skill")}`, skill: "vocabulary" },
-    { id: "reading", icon: "📖", title: t("reading"), sub: `${t("by_skill")}`, skill: "reading" },
-    { id: "listening", icon: "🎧", title: t("listening"), sub: `${t("by_skill")}`, skill: "listening" },
+  const acc = (sk: SkillId) => skillScore(s, sk);
+  const modes: { id: string; icon: string; title: string; sub: string; skill?: SkillId | "mixed"; meta?: string; accuracy?: number | null }[] = [
+    { id: "quick", icon: "⚡", title: t("quick"), sub: t("quick_sub"), skill: "mixed", meta: `~3 ${t("min")} · +25 XP` },
+    { id: "mixed", icon: "🔀", title: t("mixed"), sub: t("mixed_sub"), skill: "mixed", meta: `10 ${t("questions_n")} · ${countFor(s.level, "mixed").toLocaleString()} ${t("questions_n")} ${s.level}` },
+    { id: "grammar", icon: "📘", title: t("grammar"), sub: `${countFor(s.level, "grammar")} ${t("questions_n")} · ~7 ${t("min")}`, skill: "grammar", accuracy: acc("grammar") },
+    { id: "vocabulary", icon: "🃏", title: t("vocabulary"), sub: `${countFor(s.level, "vocabulary")} ${t("words")} · ~6 ${t("min")}`, skill: "vocabulary", accuracy: acc("vocabulary") },
+    { id: "reading", icon: "📖", title: t("reading"), sub: `${countFor(s.level, "reading")} ${t("questions_n")} · ~8 ${t("min")}`, skill: "reading", accuracy: acc("reading") },
+    { id: "listening", icon: "🎧", title: t("listening"), sub: `${countFor(s.level, "listening")} ${t("questions_n")} · ~6 ${t("min")}`, skill: "listening", accuracy: acc("listening") },
   ];
+  const doneCount = (sk: SkillId) => getLevel(s.level).skills[sk === "speaking" ? "speaking" : "writing"].filter((x: { id: string }) => s.done[`${s.level}.${sk}.${x.id}`]).length;
   return (
     <div className="animate-rise">
       <div className="pt-2">
@@ -79,9 +91,16 @@ function Hub() {
       <div className="grid grid-cols-2 gap-3">
         {modes.map((m) => (
           <Card key={m.id} className="p-5" onClick={() => go("practice-session", { mode: m.id, skill: m.skill ?? "mixed", diff })}>
-            <div className="text-2xl">{m.icon}</div>
+            <div className="flex items-start justify-between">
+              <div className="text-2xl">{m.icon}</div>
+              {m.accuracy != null && (
+                <Chip tone={m.accuracy < 60 ? "bad" : m.accuracy < 75 ? "accent" : "good"}>{m.accuracy}%</Chip>
+              )}
+            </div>
             <div className="font-extrabold mt-2 text-[15px]">{m.title}</div>
             <div className="text-xs text-ink-2 dark:text-slate-400 mt-0.5">{m.sub}</div>
+            {m.meta && <div className="text-[11px] font-bold text-brand-600 dark:text-brand-400 mt-1.5">{m.meta}</div>}
+            {m.accuracy != null && <ProgressBar value={m.accuracy} className="mt-2.5" tone={m.accuracy < 70 ? "accent" : "brand"} />}
           </Card>
         ))}
       </div>
@@ -89,12 +108,26 @@ function Hub() {
       <SectionTitle>{t("speaking")} · {t("writing")}</SectionTitle>
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-5" onClick={() => go("level", { lvl: s.level, skill: "speaking" })}>
-          <div className="text-2xl">🎤</div><div className="font-extrabold mt-2 text-[15px]">{t("speaking")}</div>
-          <div className="text-xs text-ink-2 dark:text-slate-400 mt-0.5">{getLevel(s.level).skills.speaking.length} {t("lessons")}</div>
+          <div className="flex items-start justify-between">
+            <div className="text-2xl">🎤</div>
+            {skillScore(s, "speaking") != null && <Chip tone="brand">{skillScore(s, "speaking")}%</Chip>}
+          </div>
+          <div className="font-extrabold mt-2 text-[15px]">{t("speaking")}</div>
+          <div className="text-xs text-ink-2 dark:text-slate-400 mt-0.5">
+            {doneCount("speaking")}/{getLevel(s.level).skills.speaking.length} {t("done_of")} · 60–120s
+          </div>
+          <ProgressBar value={(doneCount("speaking") / Math.max(1, getLevel(s.level).skills.speaking.length)) * 100} className="mt-2.5" />
         </Card>
         <Card className="p-5" onClick={() => go("level", { lvl: s.level, skill: "writing" })}>
-          <div className="text-2xl">✍️</div><div className="font-extrabold mt-2 text-[15px]">{t("writing")}</div>
-          <div className="text-xs text-ink-2 dark:text-slate-400 mt-0.5">{getLevel(s.level).skills.writing.length} {t("lessons")}</div>
+          <div className="flex items-start justify-between">
+            <div className="text-2xl">✍️</div>
+            {skillScore(s, "writing") != null && <Chip tone="brand">{skillScore(s, "writing")}%</Chip>}
+          </div>
+          <div className="font-extrabold mt-2 text-[15px]">{t("writing")}</div>
+          <div className="text-xs text-ink-2 dark:text-slate-400 mt-0.5">
+            {doneCount("writing")}/{getLevel(s.level).skills.writing.length} {t("done_of")} · 80–260 {t("words")}
+          </div>
+          <ProgressBar value={(doneCount("writing") / Math.max(1, getLevel(s.level).skills.writing.length)) * 100} className="mt-2.5" />
         </Card>
       </div>
     </div>

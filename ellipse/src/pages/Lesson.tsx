@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Play, Square, Mic, ArrowRight, RotateCcw, Volume2 } from "lucide-react";
 import { useApp, back, go, recordAnswer, completeLesson, learnWord, celebrate, getState } from "../lib/store";
-import { level as getLevel, speak, stopSpeaking, skillItems, lessonKey, type LevelId, type SkillId, type GrammarLesson, type VocabUnit, type ReadingLesson, type ListeningLesson, type SpeakingTask, type WritingTask, type Word } from "../lib/content";
+import { level as getLevel, speak, stopSpeaking, skillItems, lessonKey, type VoiceGender, type LevelId, type SkillId, type GrammarLesson, type VocabUnit, type ReadingLesson, type ListeningLesson, type SpeakingTask, type WritingTask, type Word } from "../lib/content";
 import { t } from "../lib/i18n";
 import { Button, Card, ProgressBar, QuizRunner, Ellie, Chip, SpeakButton } from "../components/ui";
 
@@ -130,6 +130,31 @@ function GrammarPlayer({ lvl, lesson }: { lvl: LevelId; lesson: GrammarLesson })
         <Card className="p-5">
           <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-ink-2 dark:text-slate-400 mb-2">{t("situation")}</div>
           <p className="text-[14px] leading-relaxed">{pickTr(expLang, tr?.situation, lesson.situation)}</p>
+        </Card>
+      )}
+      {lesson.timeline && (
+        <Card className="p-5">
+          <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-ink-2 dark:text-slate-400 mb-2">{t("timeline")}</div>
+          <pre className="font-mono text-[12.5px] leading-relaxed text-brand-700 dark:text-brand-400 overflow-x-auto whitespace-pre">{lesson.timeline.art.join("\n")}</pre>
+          {lesson.timeline.note && <p className="text-[13px] text-ink-2 dark:text-slate-400 mt-2">{lesson.timeline.note}</p>}
+        </Card>
+      )}
+      {lesson.compare && (
+        <Card className="p-5">
+          <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-ink-2 dark:text-slate-400 mb-3">{t("compare")}</div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[lesson.compare.a, lesson.compare.b].map((side, si) => (
+              <div key={si} className={`rounded-2xl p-4 ${si === 0 ? "bg-brand-50/80 dark:bg-brand-950" : "bg-accent-100/70 dark:bg-night-800"}`}>
+                <div className="font-extrabold text-[13.5px] mb-2">{side.h}</div>
+                {side.ex.map((x, j) => (
+                  <div key={j} className="flex items-center gap-2 text-[13.5px] py-1">
+                    <span className="flex-1">{x}</span>
+                    <SpeakButton text={x} className="!w-7 !h-7" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </Card>
       )}
       {lesson.blocks.map((b, i) => (
@@ -314,13 +339,12 @@ function ListeningPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ListeningLesso
   }));
 
   useEffect(() => () => stopSpeaking(), []);
+  // alternate narrator per lesson: half the audio lessons male, half female
+  const narrator = (parseInt(lesson.id.replace(/\D/g, ""), 10) || 0) % 2 === 0 ? "f" : "m";
   const toggle = () => {
     if (playing) { stopSpeaking(); setPlaying(false); return; }
     setPlaying(true); setPlayed(true);
-    const u = new SpeechSynthesisUtterance(lesson.script);
-    u.lang = "en-US"; u.rate = rate;
-    u.onend = () => setPlaying(false);
-    try { speechSynthesis.cancel(); speechSynthesis.speak(u); } catch { setPlaying(false); }
+    speak(lesson.script, rate, narrator as VoiceGender, () => setPlaying(false));
   };
 
   if (stage === "done") return <CompleteScreen lvl={lvl} skill="listening" id={lesson.id} score={score} total={lesson.quiz.length} onRetry={() => { setScore(0); setStage("quiz"); }} />;

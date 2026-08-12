@@ -9,6 +9,8 @@ export interface GrammarLesson {
   id: string; title: string; lead: string;
   leadTr: LangPair | null;
   situation: string;
+  timeline: { art: string[]; note: string } | null;
+  compare: { a: { h: string; ex: string[] }; b: { h: string; ex: string[] } } | null;
   blocks: { h: string; p: string[]; ex: string[] }[];
   tip: string; examples: string[];
   mistakes: { x: string; v: string }[];
@@ -66,23 +68,45 @@ export function levelWordCount(lvl: LevelId): number {
   return level(lvl).skills.vocabulary.reduce((n, u) => n + u.words.length, 0);
 }
 
-/* Text-to-speech helper (offline, built into the browser) */
-let voice: SpeechSynthesisVoice | null = null;
-function pickVoice() {
+/* -------------------------------------------------------------------------
+ * Audio — 50% male / 50% female voices.
+ * Today: browser TTS picks a male or female English voice per item, split
+ * deterministically so half the content speaks with each voice.
+ * Later: scripts/generate-audio.mjs pre-renders the same manifest through
+ * ElevenLabs (same gender split); drop the MP3s in and they take priority.
+ * ------------------------------------------------------------------------- */
+export type VoiceGender = "m" | "f";
+const FEMALE_RE = /female|samantha|victoria|karen|zira|susan|hazel|serena|kate|allison|ava|joanna|jenny|aria|libby|sonia|moira|tessa|fiona|google uk english female|google us english/i;
+const MALE_RE = /(?<!fe)male|daniel|david|alex|fred|george|guy|ryan|thomas|oliver|james|arthur|william|christopher|eric|brian|google uk english male/i;
+
+let voiceF: SpeechSynthesisVoice | null = null;
+let voiceM: SpeechSynthesisVoice | null = null;
+function pickVoices() {
   try {
-    const vs = speechSynthesis.getVoices();
-    voice = vs.find((v) => /en[-_](GB|US)/i.test(v.lang) && /Google|Samantha|Daniel|Karen/i.test(v.name)) ?? vs.find((v) => /^en/i.test(v.lang)) ?? null;
+    const en = speechSynthesis.getVoices().filter((v) => /^en[-_]?(US|GB)?/i.test(v.lang));
+    voiceF = en.find((v) => FEMALE_RE.test(v.name)) ?? en[0] ?? null;
+    voiceM = en.find((v) => MALE_RE.test(v.name) && !FEMALE_RE.test(v.name)) ?? en.find((v) => v !== voiceF) ?? voiceF;
   } catch { /* no tts */ }
 }
-if (typeof speechSynthesis !== "undefined") { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+if (typeof speechSynthesis !== "undefined") { pickVoices(); speechSynthesis.onvoiceschanged = pickVoices; }
 
-export function speak(text: string, rate = 0.95) {
-  if (typeof speechSynthesis === "undefined") return;
+/** Deterministic 50/50 split: the same text always gets the same voice. */
+export function genderFor(text: string): VoiceGender {
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
+  return (h & 1) === 0 ? "f" : "m";
+}
+
+export function speak(text: string, rate = 0.95, gender?: VoiceGender, onEnd?: () => void) {
+  if (typeof speechSynthesis === "undefined") { onEnd?.(); return; }
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US"; if (voice) u.voice = voice; u.rate = rate;
+    const g = gender ?? genderFor(text);
+    const v = g === "m" ? voiceM : voiceF;
+    u.lang = "en-US"; if (v) u.voice = v; u.rate = rate;
+    if (onEnd) u.onend = onEnd;
     speechSynthesis.speak(u);
-  } catch { /* ignore */ }
+  } catch { onEnd?.(); }
 }
 export function stopSpeaking() { try { speechSynthesis.cancel(); } catch { /* ignore */ } }
