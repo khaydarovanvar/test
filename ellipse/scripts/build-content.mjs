@@ -11,6 +11,13 @@ const rich = JSON.parse(readFileSync(join(root, "content-src/eng_rich.json"), "u
 const placementSrc = JSON.parse(readFileSync(join(root, "content-src/placement.json"), "utf8"));
 const satVocab = JSON.parse(readFileSync(join(root, "content-src/sat_vocab.json"), "utf8"));
 const satEnglish = JSON.parse(readFileSync(join(root, "content-src/sat_english.json"), "utf8"));
+// strategy lessons: scrub exam-brand references before use
+const scrub = (s) => s
+  .replace(/\bthe (Digital )?SAT\b/g, "the exam")
+  .replace(/\bDigital SAT\b/g, "exam")
+  .replace(/\bSAT\b/g, "exam")
+  .replace(/(^|[.!?]\s+)exam\b/g, (m, p) => p + "Exam");
+const satLessons = JSON.parse(scrub(readFileSync(join(root, "content-src/sat_lessons.json"), "utf8")));
 
 const LEVEL_META = {
   A1: { name: "Beginner", tagline: "Build your English foundation", weeks: 8, color: "emerald" },
@@ -358,6 +365,45 @@ const readingSet = (def) => ({
   quiz: takeQuestions(def.domain, def.count, { topic: def.topic, diff: def.diff }),
 });
 
+/* 4) Strategy lessons from the shared explanation bank (theory → keys → worked examples) */
+const sessionsOf = (domain) => (satLessons[domain] || []).flatMap((u) => u.sessions || []);
+const exQuiz = (s) => (s.examples || [])
+  .filter((e) => Array.isArray(e.opts) && e.opts.length === 4)
+  .map((e) => ({
+    q: strip(e.q), o: e.opts.map(strip), a: e.ans,
+    e: strip(String(e.a || "").replace(/^Correct answer:\s*[A-D]\)\s*[^.]*\.\s*/, "")),
+    d: "medium",
+  }));
+const asReading = (s, i) => ({
+  id: `st${i + 1}`, title: s.title,
+  text: (s.theory || []).map(strip).join("\n\n") + "\n\nKey points:\n• " + (s.keys || []).map(strip).join("\n• "),
+  quiz: exQuiz(s),
+});
+const asGrammar = (s, i) => ({
+  id: `st${i + 1}`, title: s.title, lead: strip((s.theory || [])[0] || ""), leadTr: null,
+  situation: "", timeline: null, compare: null,
+  blocks: [
+    { h: "How it works", p: (s.theory || []).slice(1).map(strip), ex: [] },
+    { h: "Key points", p: (s.keys || []).map(strip), ex: [] },
+  ].filter((b) => b.p.length),
+  tip: "", examples: [], mistakes: [], quiz: exQuiz(s), tr: null,
+});
+const info = sessionsOf("Information and Ideas");
+const craft = sessionsOf("Craft and Structure");
+const expr = sessionsOf("Expression of Ideas");
+const conv = sessionsOf("Standard English Conventions");
+const STRATEGY = {
+  reading: {
+    B1: info.slice(0, 4).map(asReading),
+    B2: [...info.slice(4).map(asReading), ...craft.slice(0, 5).map((s, i) => asReading(s, i + 4))],
+    C1: [...craft.slice(5).map(asReading), ...expr.map((s, i) => asReading(s, i + 5))],
+  },
+  grammar: {
+    B2: conv.slice(0, 7).map(asGrammar),
+    C1: conv.slice(7).map(asGrammar),
+  },
+};
+
 for (const level of levels) {
   const extraVocab = vocabFor(level.id);
   if (extraVocab.length) level.skills.vocabulary = [...level.skills.vocabulary, ...extraVocab];
@@ -366,6 +412,10 @@ for (const level of levels) {
   const rs = READING_SETS[level.id];
   if (rs) level.skills.reading = [...level.skills.reading, ...rs.map(readingSet).filter((l) => l.quiz.length >= 3)];
   if (level.id === "C1") level.skills.listening = [...level.skills.listening, ...C1_LISTENING];
+  const stR = STRATEGY.reading[level.id];
+  if (stR) level.skills.reading = [...level.skills.reading, ...stR.filter((l) => l.quiz.length >= 3)];
+  const stG = STRATEGY.grammar[level.id];
+  if (stG) level.skills.grammar = [...level.skills.grammar, ...stG.filter((l) => l.quiz.length >= 3)];
 }
 
 const out = { levels, placement, scenarios: [...SCENARIOS, ...EXTRA_SCENARIOS] };

@@ -7,13 +7,17 @@ import { Card, Button, Chip, QuizRunner, SectionTitle, Ellie, ProgressRing, Prog
 
 type Diff = "all" | "easy" | "medium" | "hard";
 
-function poolFor(lvl: LevelId, skill: SkillId | "mixed", uiLang: string, diff: Diff): { q: string; o: string[]; a: number; e?: string; skill: SkillId }[] {
+type Ctx = { kind: "text" | "audio"; content: string; label: string };
+function poolFor(lvl: LevelId, skill: SkillId | "mixed", uiLang: string, diff: Diff): { q: string; o: string[]; a: number; e?: string; skill: SkillId; ctx?: Ctx }[] {
   const L = getLevel(lvl);
-  const out: { q: string; o: string[]; a: number; e?: string; skill: SkillId; d: string }[] = [];
-  const push = (qs: QuizQ[], sk: SkillId) => qs.forEach((q) => out.push({ ...q, skill: sk, d: q.d || "medium" }));
+  const out: { q: string; o: string[]; a: number; e?: string; skill: SkillId; d: string; ctx?: Ctx }[] = [];
+  const push = (qs: QuizQ[], sk: SkillId, ctx?: Ctx) => qs.forEach((q) => out.push({ ...q, skill: sk, d: q.d || "medium", ctx }));
   if (skill === "grammar" || skill === "mixed") L.skills.grammar.forEach((l) => push(l.quiz, "grammar"));
-  if (skill === "reading" || skill === "mixed") L.skills.reading.forEach((l) => push(l.quiz, "reading"));
-  if (skill === "listening" || skill === "mixed") L.skills.listening.forEach((l) => push(l.quiz, "listening"));
+  if (skill === "reading" || skill === "mixed") L.skills.reading.forEach((l) =>
+    // passage-per-question sets embed their text inside each question; real passages ride along as context
+    push(l.quiz, "reading", /Key points:|its own short passage/.test(l.text) ? undefined : { kind: "text", content: l.text, label: l.title }));
+  if (skill === "listening" || skill === "mixed") L.skills.listening.forEach((l) =>
+    push(l.quiz, "listening", { kind: "audio", content: l.script, label: l.title }));
   if (skill === "vocabulary" || skill === "mixed") {
     const meaning = (w: Word) => (uiLang === "ru" ? w.ru : uiLang === "uz" ? w.uz : (w.def || w.uz));
     L.skills.vocabulary.forEach((u) => u.words.forEach((w) => {

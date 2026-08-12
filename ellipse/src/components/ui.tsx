@@ -194,7 +194,7 @@ export function Celebration({ title, sub, xp }: { title: string; sub: string; xp
 /* ------------------------------------------------------------------ */
 /* Shared quiz runner                                                  */
 /* ------------------------------------------------------------------ */
-export interface RunnerQ { q: string; o: string[]; a: number; e?: string }
+export interface RunnerQ { q: string; o: string[]; a: number; e?: string; ctx?: { kind: "text" | "audio"; content: string; label: string } }
 export function QuizRunner({ questions, onAnswer, onDone, translateExpl }: {
   questions: RunnerQ[];
   onAnswer?: (ok: boolean, idx: number) => void;
@@ -229,6 +229,24 @@ export function QuizRunner({ questions, onAnswer, onDone, translateExpl }: {
         <span className="text-xs font-bold text-ink-2 dark:text-slate-400 tabular-nums">{idx + 1}/{questions.length}</span>
       </div>
       <div key={idx} className="animate-rise">
+        {q.ctx && q.ctx.kind === "text" && (
+          <div className="mb-4 rounded-2xl bg-mist/30 dark:bg-night-800 border border-mist/60 dark:border-night-700 p-4 max-h-56 overflow-y-auto">
+            <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-ink-2 dark:text-slate-400 mb-1.5">📖 {q.ctx.label}</div>
+            <p className="text-[13.5px] leading-relaxed whitespace-pre-line">{q.ctx.content}</p>
+          </div>
+        )}
+        {q.ctx && q.ctx.kind === "audio" && (
+          <div className="mb-4 flex items-center gap-3 rounded-2xl bg-mist/30 dark:bg-night-800 border border-mist/60 dark:border-night-700 p-4">
+            <button onClick={() => speak(q.ctx!.content, 0.92)}
+              className="shrink-0 w-11 h-11 grid place-items-center rounded-full bg-brand-600 text-white active:scale-95 transition-transform">
+              <Volume2 size={18} />
+            </button>
+            <div>
+              <div className="text-[10.5px] font-extrabold tracking-[0.14em] uppercase text-ink-2 dark:text-slate-400">🎧 {q.ctx.label}</div>
+              <div className="text-xs text-ink-2 dark:text-slate-400 mt-0.5">{t("listen_first")}</div>
+            </div>
+          </div>
+        )}
         <p className="text-[17px] font-bold leading-relaxed mb-4 whitespace-pre-line">{q.q}</p>
         <div className="space-y-2.5">
           {q.o.map((o, i) => {
