@@ -11,7 +11,7 @@ export function Card({ children, className = "", onClick }: { children: ReactNod
   return (
     <Tag
       onClick={onClick}
-      className={`block w-full text-left rounded-[20px] bg-surface dark:bg-night-900 border border-mist/70 dark:border-night-700 shadow-soft ${onClick ? "transition-all duration-150 hover:shadow-lift hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]" : ""} ${className}`}
+      className={`block w-full text-left rounded-[20px] bg-surface dark:bg-night-900 backdrop-blur-xl border border-mist/70 dark:border-night-700 shadow-soft ${onClick ? "transition-all duration-150 hover:shadow-lift hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]" : ""} ${className}`}
     >
       {children}
     </Tag>

@@ -39,26 +39,26 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Hero journey card */}
+      {/* Hero journey card — glass (light) / aurora (dark) */}
       <Card className="mt-5 overflow-hidden">
-        <div className="bg-gradient-to-br from-brand-900 via-brand-700 to-brand-600 text-white p-6">
-          <div className="text-[11px] font-extrabold tracking-[0.18em] uppercase text-white/60">{t("journey")}</div>
+        <div className="p-6">
+          <div className="text-[11px] font-extrabold tracking-[0.18em] uppercase text-accent-500 dark:text-brand-400">{t("journey")}</div>
           <div className="flex items-end justify-between mt-2">
             <div>
               <div className="text-5xl font-extrabold tracking-tight">{s.level}</div>
-              <div className="font-semibold text-white/80 mt-1">{lvl.name}</div>
+              <div className="font-semibold text-ink-2 dark:text-slate-300 mt-1">{lvl.name}</div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-extrabold">{prog}%</div>
-              {s.level !== nextLvl && <div className="text-xs text-white/70 font-semibold">{t("away_from", { n: 100 - prog, lvl: nextLvl })}</div>}
+              <div className="text-3xl font-extrabold text-accent-500 dark:text-brand-400">{prog}%</div>
+              {s.level !== nextLvl && <div className="text-xs text-ink-2 dark:text-slate-400 font-semibold">{t("away_from", { n: 100 - prog, lvl: nextLvl })}</div>}
             </div>
           </div>
-          <div className="mt-4 h-2.5 rounded-full bg-white/20 overflow-hidden">
+          <div className="mt-4 h-2.5 rounded-full bg-mist/60 dark:bg-night-700 overflow-hidden">
             <div className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent-500 transition-[width] duration-700" style={{ width: `${prog}%` }} />
           </div>
           {nx && (
             <button onClick={() => go("lesson", { lvl: nx.lvl, skill: nx.skill, id: nx.id })}
-              className="mt-5 w-full flex items-center justify-center gap-2 bg-white text-brand-900 font-extrabold py-3.5 rounded-2xl hover:bg-brand-50 transition-colors active:scale-[0.98]">
+              className="mt-5 w-full flex items-center justify-center gap-2 bg-white text-brand-900 dark:bg-brand-600 font-extrabold py-3.5 rounded-2xl hover:opacity-95 transition-all active:scale-[0.98]">
               {t("continue_learning")} <ArrowRight size={18} />
             </button>
           )}

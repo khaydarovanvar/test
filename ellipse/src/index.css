@@ -62,9 +62,84 @@
 
 html, body, #root { height: 100%; }
 body {
-  @apply bg-canvas text-ink antialiased dark:bg-night-950 dark:text-slate-100;
+  @apply text-ink antialiased dark:text-slate-100;
   overscroll-behavior-y: none;
 }
+
+/* ================================================================== */
+/*  SKIN — A “Emerald Glass” (light) + C “Midnight Aurora” (dark)      */
+/*  Token overrides re-dress every component without touching markup.  */
+/* ================================================================== */
+
+/* ---------- A · Emerald Glass (light) ---------- */
+[data-theme="light"] {
+  --color-surface: rgba(255, 255, 255, 0.09);
+  --color-canvas: transparent;
+  --color-ink: #f2faf6;
+  --color-ink-2: rgba(230, 245, 238, 0.68);
+  --color-mist: rgba(255, 255, 255, 0.17);
+  --color-brand-50: rgba(255, 255, 255, 0.10);
+  --color-brand-100: rgba(255, 255, 255, 0.16);
+  --color-brand-950: rgba(255, 255, 255, 0.13);
+  --color-accent-100: rgba(245, 158, 11, 0.22);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.10), 0 12px 34px -14px rgb(0 20 12 / 0.45);
+  --shadow-lift: 0 2px 8px rgb(0 0 0 / 0.14), 0 22px 50px -16px rgb(0 20 12 / 0.55);
+}
+[data-theme="light"] body { background: #053324; }
+[data-theme="light"] body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(340px 340px at 88% -4%, rgba(52, 211, 153, 0.28), transparent 65%),
+    radial-gradient(300px 300px at -6% 82%, rgba(245, 158, 11, 0.16), transparent 65%),
+    linear-gradient(165deg, #04231a 0%, #06402e 42%, #0a6b4a 100%);
+}
+/* accent text turns amber on emerald (template A) */
+[data-theme="light"] :is(.text-brand-600, .text-brand-700) { color: #fcd34d; }
+[data-theme="light"] .text-accent-500 { color: #fcd34d; }
+[data-theme="light"] :is(.text-red-500, .text-red-600) { color: #fda4a4; }
+[data-theme="light"] .bg-red-50 { background: rgba(220, 38, 38, 0.20); }
+[data-theme="light"] :is(.text-emerald-600, .text-brand-400) { color: #6ee7b7; }
+[data-theme="light"] .bg-emerald-50 { background: rgba(52, 211, 153, 0.16); }
+[data-theme="light"] :is(.text-slate-400, .text-slate-500, .text-slate-300) { color: rgba(230, 245, 238, 0.48); }
+[data-theme="light"] .bg-brand-600 { background: #0b8f63; }
+[data-theme="light"] .hover\:bg-brand-700:hover { background: #0aa06d; }
+/* quiz correct-state tint */
+[data-theme="light"] .border-brand-500 { border-color: #34d399; }
+
+/* ---------- C · Midnight Aurora (dark) ---------- */
+[data-theme="dark"] {
+  --color-night-950: #050c0a;
+  --color-night-900: rgba(13, 33, 25, 0.62);
+  --color-night-800: rgba(52, 211, 153, 0.09);
+  --color-night-700: rgba(52, 211, 153, 0.20);
+  --color-brand-950: rgba(52, 211, 153, 0.13);
+  --color-brand-400: #6ee7b7;
+  --color-slate-100: #e7f5ee;
+  --color-slate-300: #b9d6c8;
+  --color-slate-400: #5e7a6e;
+  --color-slate-500: #4e6a5e;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 10px 30px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 0 0 1px rgba(52, 211, 153, 0.10), 0 18px 44px -14px rgb(0 0 0 / 0.7);
+}
+[data-theme="dark"] body { background: #050c0a; }
+[data-theme="dark"] body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(420px 420px at -8% -6%, rgba(16, 185, 129, 0.14), transparent 60%),
+    radial-gradient(380px 380px at 105% 92%, rgba(124, 92, 252, 0.10), transparent 60%);
+}
+/* neon glow on progress rings and CTAs */
+[data-theme="dark"] svg .stroke-brand-500 { filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.55)); }
+[data-theme="dark"] .bg-brand-600 {
+  background: linear-gradient(90deg, #10b981, #34d399);
+  color: #03130d;
+  box-shadow: 0 0 22px rgba(52, 211, 153, 0.30);
+}
+[data-theme="dark"] .bg-brand-600 * { color: #03130d; }
+[data-theme="dark"] .bg-accent-500 { box-shadow: 0 0 20px rgba(245, 158, 11, 0.25); }
+
+/* keep app content above the glow layers */
+#root { position: relative; z-index: 1; }
 
 /* thin scrollbars for desktop panels */
 * { scrollbar-width: thin; scrollbar-color: rgb(100 116 139 / 0.35) transparent; }
