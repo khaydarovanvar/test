@@ -26,6 +26,8 @@ function mapQuiz(q) {
   return (q || []).map((x) => ({ q: strip(x.q), o: x.o.map(strip), a: x.a, e: strip(x.e || ""), d: x.d || "medium" }));
 }
 
+const stripPair = (p) => (p ? { uz: strip(p.uz || ""), ru: strip(p.ru || "") } : null);
+
 function grammarLessons(lvl) {
   const g = rich[lvl].GRAMMAR || [];
   const gmore = rich[lvl].GMORE || {};
@@ -33,15 +35,22 @@ function grammarLessons(lvl) {
   return g.map((l) => {
     const extra = gmore[l.id] || {};
     const trans = tr[l.id] || {};
+    const fullTr = (trans.situation || trans.tip || trans.blocks || trans.q) ? {
+      situation: stripPair(trans.situation),
+      tip: stripPair(trans.tip),
+      blocks: (trans.blocks || []).map((b) => ({ h: stripPair(b.h), p: (b.p || []).map(stripPair) })),
+      quiz: (trans.q || []).map(stripPair),
+    } : null;
     return {
       id: l.id, title: l.title, lead: strip(l.lead),
-      leadTr: trans.lead || LEAD_TR[lvl]?.[l.id] || null,
+      leadTr: stripPair(trans.lead) || LEAD_TR[lvl]?.[l.id] || null,
       situation: strip(extra.situation || ""),
       blocks: (l.blocks || []).map((b) => ({ h: strip(b.h), p: (b.p || []).map(strip), ex: (b.ex || []).map(strip) })),
       tip: strip(l.tip || ""),
       examples: (l.examples || []).map(strip),
       mistakes: (extra.mistakes || []).map((m) => ({ x: strip(m.x), v: strip(m.v) })),
       quiz: mapQuiz(l.q),
+      tr: fullTr,
     };
   });
 }
@@ -53,8 +62,12 @@ function vocabUnits(lvl) {
   }));
 }
 
-const readingLessons = (lvl) => (rich[lvl].READING || []).map((l) => ({ id: l.id, title: l.title, text: l.text, quiz: mapQuiz(l.q) }));
-const listeningLessons = (lvl) => (rich[lvl].LISTENING || []).map((l) => ({ id: l.id, title: l.title, script: l.script, quiz: mapQuiz(l.q) }));
+const quizTrFor = (lvl, id) => {
+  const q = rich[lvl].TR?.[id]?.q;
+  return q ? q.map(stripPair) : null;
+};
+const readingLessons = (lvl) => (rich[lvl].READING || []).map((l) => ({ id: l.id, title: l.title, text: l.text, quiz: mapQuiz(l.q), quizTr: quizTrFor(lvl, l.id) }));
+const listeningLessons = (lvl) => (rich[lvl].LISTENING || []).map((l) => ({ id: l.id, title: l.title, script: l.script, quiz: mapQuiz(l.q), quizTr: quizTrFor(lvl, l.id) }));
 
 /* ---------------- authored: speaking tasks ---------------- */
 const SPEAKING = {

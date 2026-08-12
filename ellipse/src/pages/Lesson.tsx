@@ -72,42 +72,74 @@ function CompleteScreen({ lvl, skill, id, score, total, onRetry }: { lvl: LevelI
 }
 
 /* ------------------------------------------------------------------ */
+/* Explanation-language toggle (EN | UZ | RU)                          */
+type ExpLang = "en" | "uz" | "ru";
+function LangSeg({ value, onChange }: { value: ExpLang; onChange: (l: ExpLang) => void }) {
+  return (
+    <div className="inline-flex gap-1 p-1 rounded-full bg-mist/50 dark:bg-night-800">
+      {(["en", "uz", "ru"] as ExpLang[]).map((l) => (
+        <button key={l} onClick={() => onChange(l)}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-colors ${value === l ? "bg-brand-600 text-white shadow-soft" : "text-ink-2 dark:text-slate-400"}`}>
+          {l.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+const pickTr = (lang: ExpLang, pair: { uz: string; ru: string } | null | undefined, fallback: string) =>
+  lang === "en" || !pair || !pair[lang] ? fallback : pair[lang];
+
 function GrammarPlayer({ lvl, lesson }: { lvl: LevelId; lesson: GrammarLesson }) {
   const s = useApp();
   const [stage, setStage] = useState<"learn" | "quiz" | "done">("learn");
   const [score, setScore] = useState(0);
-  const trLang = s.uiLang === "ru" ? "ru" : "uz";
+  const [expLang, setExpLang] = useState<ExpLang>(s.uiLang);
+  const hasTr = !!(lesson.tr || lesson.leadTr);
+  const tr = lesson.tr;
+
+  const quizQs = lesson.quiz.map((q, i) => ({
+    ...q,
+    e: expLang !== "en" && tr?.quiz?.[i]?.[expLang] ? tr.quiz[i]![expLang] : q.e,
+  }));
 
   if (stage === "done") return <CompleteScreen lvl={lvl} skill="grammar" id={lesson.id} score={score} total={lesson.quiz.length} onRetry={() => { setScore(0); setStage("quiz"); }} />;
 
   if (stage === "quiz") return (
-    <Card className="p-5">
-      <QuizRunner
-        questions={lesson.quiz}
-        onAnswer={(ok) => recordAnswer("grammar", ok)}
-        onDone={(sc) => { setScore(sc); setStage("done"); }}
-      />
-    </Card>
+    <div>
+      {hasTr && <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>}
+      <Card className="p-5">
+        <QuizRunner
+          questions={quizQs}
+          onAnswer={(ok) => recordAnswer("grammar", ok)}
+          onDone={(sc) => { setScore(sc); setStage("done"); }}
+        />
+      </Card>
+    </div>
   );
 
   return (
     <div className="space-y-4 pb-6">
+      {hasTr && <LangSeg value={expLang} onChange={setExpLang} />}
       <Card className="p-5">
-        <p className="text-[15px] leading-relaxed">{lesson.lead}</p>
-        {lesson.leadTr && s.uiLang !== "en" && (
-          <p className="mt-3 pl-3 border-l-[3px] border-accent-500 text-[13.5px] italic text-ink-2 dark:text-slate-400 leading-relaxed">🌐 {lesson.leadTr[trLang]}</p>
+        <p className="text-[15px] leading-relaxed">{pickTr(expLang, lesson.leadTr, lesson.lead)}</p>
+        {expLang !== "en" && lesson.leadTr && (
+          <p className="mt-3 pl-3 border-l-[3px] border-accent-500 text-[13px] italic text-ink-2 dark:text-slate-400 leading-relaxed">🇬🇧 {lesson.lead}</p>
         )}
       </Card>
       {lesson.situation && (
         <Card className="p-5">
           <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-ink-2 dark:text-slate-400 mb-2">{t("situation")}</div>
-          <p className="text-[14px] leading-relaxed">{lesson.situation}</p>
+          <p className="text-[14px] leading-relaxed">{pickTr(expLang, tr?.situation, lesson.situation)}</p>
         </Card>
       )}
       {lesson.blocks.map((b, i) => (
         <Card key={i} className="p-5">
-          <h3 className="font-extrabold mb-2">{b.h}</h3>
-          {b.p.map((p, j) => <p key={j} className="text-[14px] text-ink-2 dark:text-slate-300 leading-relaxed mb-2">{p}</p>)}
+          <h3 className="font-extrabold mb-2">{pickTr(expLang, tr?.blocks?.[i]?.h, b.h)}</h3>
+          {b.p.map((p, j) => (
+            <p key={j} className="text-[14px] text-ink-2 dark:text-slate-300 leading-relaxed mb-2">
+              {pickTr(expLang, tr?.blocks?.[i]?.p?.[j], p)}
+            </p>
+          ))}
           {b.ex.map((x, j) => (
             <div key={j} className="flex items-center gap-2 bg-brand-50/70 dark:bg-night-800 rounded-xl px-3.5 py-2.5 text-[14px] font-medium mt-2">
               <span className="flex-1">{x}</span>
@@ -117,7 +149,7 @@ function GrammarPlayer({ lvl, lesson }: { lvl: LevelId; lesson: GrammarLesson })
         </Card>
       ))}
       {lesson.tip && (
-        <div className="rounded-2xl bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400 px-5 py-4 text-[14px] font-medium">💡 <b>{t("tip")}:</b> {lesson.tip}</div>
+        <div className="rounded-2xl bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400 px-5 py-4 text-[14px] font-medium">💡 <b>{t("tip")}:</b> {pickTr(expLang, tr?.tip, lesson.tip)}</div>
       )}
       {lesson.examples.length > 0 && (
         <Card className="p-5">
@@ -239,11 +271,20 @@ function VocabPlayer({ lvl, unit }: { lvl: LevelId; unit: VocabUnit }) {
 
 /* ------------------------------------------------------------------ */
 function ReadingPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ReadingLesson }) {
+  const s = useApp();
   const [stage, setStage] = useState<"read" | "quiz" | "done">("read");
   const [score, setScore] = useState(0);
+  const [expLang, setExpLang] = useState<ExpLang>(s.uiLang);
+  const quizQs = lesson.quiz.map((q, i) => ({
+    ...q,
+    e: expLang !== "en" && lesson.quizTr?.[i]?.[expLang] ? lesson.quizTr[i]![expLang] : q.e,
+  }));
   if (stage === "done") return <CompleteScreen lvl={lvl} skill="reading" id={lesson.id} score={score} total={lesson.quiz.length} onRetry={() => { setScore(0); setStage("quiz"); }} />;
   if (stage === "quiz") return (
-    <Card className="p-5"><QuizRunner questions={lesson.quiz} onAnswer={(ok) => recordAnswer("reading", ok)} onDone={(sc) => { setScore(sc); setStage("done"); }} /></Card>
+    <div>
+      {lesson.quizTr && <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>}
+      <Card className="p-5"><QuizRunner questions={quizQs} onAnswer={(ok) => recordAnswer("reading", ok)} onDone={(sc) => { setScore(sc); setStage("done"); }} /></Card>
+    </div>
   );
   return (
     <div className="pb-6">
@@ -259,12 +300,18 @@ function ReadingPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ReadingLesson })
 
 /* ------------------------------------------------------------------ */
 function ListeningPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ListeningLesson }) {
+  const s = useApp();
   const [stage, setStage] = useState<"listen" | "quiz" | "done">("listen");
   const [score, setScore] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [rate, setRate] = useState(0.92);
   const [transcript, setTranscript] = useState(false);
   const [played, setPlayed] = useState(false);
+  const [expLang, setExpLang] = useState<ExpLang>(s.uiLang);
+  const quizQs = lesson.quiz.map((q, i) => ({
+    ...q,
+    e: expLang !== "en" && lesson.quizTr?.[i]?.[expLang] ? lesson.quizTr[i]![expLang] : q.e,
+  }));
 
   useEffect(() => () => stopSpeaking(), []);
   const toggle = () => {
@@ -278,7 +325,10 @@ function ListeningPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ListeningLesso
 
   if (stage === "done") return <CompleteScreen lvl={lvl} skill="listening" id={lesson.id} score={score} total={lesson.quiz.length} onRetry={() => { setScore(0); setStage("quiz"); }} />;
   if (stage === "quiz") return (
-    <Card className="p-5"><QuizRunner questions={lesson.quiz} onAnswer={(ok) => recordAnswer("listening", ok)} onDone={(sc) => { setScore(sc); setStage("done"); }} /></Card>
+    <div>
+      {lesson.quizTr && <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>}
+      <Card className="p-5"><QuizRunner questions={quizQs} onAnswer={(ok) => recordAnswer("listening", ok)} onDone={(sc) => { setScore(sc); setStage("done"); }} /></Card>
+    </div>
   );
 
   return (

@@ -4,19 +4,26 @@ export type LevelId = "A1" | "A2" | "B1" | "B2" | "C1";
 export type SkillId = "grammar" | "vocabulary" | "reading" | "listening" | "speaking" | "writing";
 
 export interface QuizQ { q: string; o: string[]; a: number; e: string; d?: string }
+export interface LangPair { uz: string; ru: string }
 export interface GrammarLesson {
   id: string; title: string; lead: string;
-  leadTr: { uz: string; ru: string } | null;
+  leadTr: LangPair | null;
   situation: string;
   blocks: { h: string; p: string[]; ex: string[] }[];
   tip: string; examples: string[];
   mistakes: { x: string; v: string }[];
   quiz: QuizQ[];
+  tr?: {
+    situation: LangPair | null;
+    tip: LangPair | null;
+    blocks: { h: LangPair | null; p: (LangPair | null)[] }[];
+    quiz: (LangPair | null)[];
+  } | null;
 }
 export interface Word { w: string; pos: string; ipa: string; uz: string; ru: string; def: string; ex: string; syn?: string; ant?: string }
 export interface VocabUnit { id: string; title: string; words: Word[] }
-export interface ReadingLesson { id: string; title: string; text: string; quiz: QuizQ[] }
-export interface ListeningLesson { id: string; title: string; script: string; quiz: QuizQ[] }
+export interface ReadingLesson { id: string; title: string; text: string; quiz: QuizQ[]; quizTr?: (LangPair | null)[] | null }
+export interface ListeningLesson { id: string; title: string; script: string; quiz: QuizQ[]; quizTr?: (LangPair | null)[] | null }
 export interface SpeakingTask { id: string; title: string; prompt: string; seconds: number; tips: string[] }
 export interface WritingTask { id: string; title: string; prompt: string; min: number; max: number; hints: string[] }
 export interface Level {
