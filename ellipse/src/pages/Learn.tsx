@@ -1,5 +1,5 @@
-import { Lock, ChevronRight, Check, MessagesSquare, Sparkles } from "lucide-react";
-import { useApp, go, levelProgress, isLevelUnlocked, skillProgress } from "../lib/store";
+import { ChevronRight, Check, MessagesSquare, Sparkles } from "lucide-react";
+import { useApp, go, update, levelProgress, isLevelUnlocked, skillProgress } from "../lib/store";
 import { LEVELS, SKILLS, level as getLevel, skillItems, lessonKey, levelWordCount, type LevelId, type SkillId } from "../lib/content";
 import { t } from "../lib/i18n";
 import { Card, ProgressBar, SectionTitle, Chip, ProgressRing } from "../components/ui";
@@ -29,7 +29,7 @@ function Roadmap() {
       <div className="mt-5 space-y-3">
         {LEVELS.map((lvl, i) => {
           const meta = getLevel(lvl);
-          const unlocked = isLevelUnlocked(s, lvl);
+          const onTrack = isLevelUnlocked(s, lvl);
           const prog = levelProgress(s, lvl);
           const current = lvl === s.level;
           const complete = prog >= 100;
@@ -37,33 +37,27 @@ function Roadmap() {
             <div key={lvl} className="relative">
               {i > 0 && <div className="absolute -top-3 left-9 w-0.5 h-3 bg-mist dark:bg-night-700" />}
               <Card
-                onClick={unlocked ? () => go("level", { lvl }) : undefined}
-                className={`p-5 ${current ? "ring-2 ring-brand-500/60" : ""} ${!unlocked ? "opacity-70" : ""}`}
+                onClick={() => go("level", { lvl })}
+                className={`p-5 ${current ? "ring-2 ring-brand-500/60" : ""}`}
               >
                 <div className="flex items-center gap-4">
                   <div className={`shrink-0 w-[52px] h-[52px] grid place-items-center rounded-2xl font-extrabold text-lg
-                    ${complete ? "bg-brand-600 text-white" : current ? "bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400" : unlocked ? "bg-mist/60 dark:bg-night-800 text-ink-2 dark:text-slate-300" : "bg-mist/40 dark:bg-night-800 text-slate-400"}`}>
-                    {complete ? <Check size={22} /> : !unlocked ? <Lock size={19} /> : lvl}
+                    ${complete ? "bg-brand-600 text-white" : current ? "bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400" : "bg-mist/60 dark:bg-night-800 text-ink-2 dark:text-slate-300"}`}>
+                    {complete ? <Check size={22} /> : lvl}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <b className="text-[15.5px]">{lvl} — {meta.name}</b>
                       {current && <Chip tone="brand">{t("current_level")}</Chip>}
-                      {!unlocked && <Chip>{t("locked")}</Chip>}
+                      {!onTrack && <Chip>{t("recommended_later", { lvl: LEVELS[i - 1] })}</Chip>}
                     </div>
                     <div className="text-[12.5px] text-ink-2 dark:text-slate-400 mt-0.5">“{meta.tagline}”</div>
-                    {unlocked ? (
-                      <div className="flex items-center gap-2 mt-2">
-                        <ProgressBar value={prog} className="flex-1" />
-                        <span className="text-xs font-bold tabular-nums text-ink-2 dark:text-slate-400">{prog}%</span>
-                      </div>
-                    ) : (
-                      <div className="text-[11.5px] font-semibold text-slate-400 mt-1.5">
-                        {t("unlock_hint", { lvl: LEVELS[i - 1] })} · ≈{levelWordCount(lvl)} {t("words")}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 mt-2">
+                      <ProgressBar value={prog} className="flex-1" />
+                      <span className="text-xs font-bold tabular-nums text-ink-2 dark:text-slate-400">{prog}% · ≈{levelWordCount(lvl)} {t("words")}</span>
+                    </div>
                   </div>
-                  {unlocked && <ChevronRight className="text-slate-300 dark:text-slate-600 shrink-0" size={20} />}
+                  <ChevronRight className="text-slate-300 dark:text-slate-600 shrink-0" size={20} />
                 </div>
               </Card>
             </div>
@@ -106,6 +100,13 @@ function LevelDetail({ lvl, skill }: { lvl: LevelId; skill: SkillId }) {
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">{lvl} <span className="text-ink-2 dark:text-slate-400 font-bold text-xl">{meta.name}</span></h1>
           <p className="text-sm text-ink-2 dark:text-slate-400 mt-0.5">“{meta.tagline}”</p>
+          {lvl !== s.level && (
+            <button
+              onClick={() => update((st) => { st.level = lvl; })}
+              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition-colors active:scale-95">
+              ⭐ {t("set_my_level")}
+            </button>
+          )}
         </div>
         <ProgressRing value={prog} size={64} stroke={7} />
       </div>

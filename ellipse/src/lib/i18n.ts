@@ -3,6 +3,7 @@ import { getState } from "./store";
 type Dict = Record<string, string>;
 
 const EN: Dict = {
+  recommended_later: "Best after {lvl}", set_my_level: "Set as my level",
   // nav
   nav_home: "Home", nav_learn: "Learn", nav_practice: "Practice", nav_progress: "Progress", nav_profile: "Profile",
   // common
@@ -82,6 +83,7 @@ const EN: Dict = {
 };
 
 const RU: Dict = {
+  recommended_later: "Лучше после {lvl}", set_my_level: "Сделать моим уровнем",
   nav_home: "Главная", nav_learn: "Учёба", nav_practice: "Практика", nav_progress: "Прогресс", nav_profile: "Профиль",
   continue: "Продолжить", start: "Начать", next: "Дальше", check: "Проверить", finish: "Завершить", back: "Назад",
   cancel: "Отмена", close: "Закрыть", correct: "Верно!", incorrect: "Не совсем", skip: "Пропустить",
@@ -147,6 +149,7 @@ const RU: Dict = {
 };
 
 const UZ: Dict = {
+  recommended_later: "{lvl} dan keyin tavsiya etiladi", set_my_level: "Buni mening darajam qilish",
   nav_home: "Asosiy", nav_learn: "Darslar", nav_practice: "Mashq", nav_progress: "Progress", nav_profile: "Profil",
   continue: "Davom etish", start: "Boshlash", next: "Keyingisi", check: "Tekshirish", finish: "Yakunlash", back: "Orqaga",
   cancel: "Bekor qilish", close: "Yopish", correct: "To'g'ri!", incorrect: "Noto'g'ri", skip: "O'tkazib yuborish",

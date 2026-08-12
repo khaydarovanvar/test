@@ -1,4 +1,4 @@
-import { Lock, Check, Trophy } from "lucide-react";
+import { Check, Trophy } from "lucide-react";
 import { useApp, go, levelProgress, masteryScore, skillScore, totalMinutes, wordsLearned, wordsByStatus, weekData, isLevelUnlocked, leaderboard, ACHIEVEMENTS } from "../lib/store";
 import { LEVELS, SKILLS, level as getLevel, levelLessonCount, levelWordCount } from "../lib/content";
 import { t } from "../lib/i18n";
@@ -87,29 +87,27 @@ export default function ProgressPage() {
       <div className="space-y-3">
         {LEVELS.map((lvl) => {
           const meta = getLevel(lvl);
-          const unlocked = isLevelUnlocked(s, lvl);
+          const onTrack = isLevelUnlocked(s, lvl);
           const prog = levelProgress(s, lvl);
           const prevIdx = LEVELS.indexOf(lvl) - 1;
           return (
-            <Card key={lvl} className={`p-5 ${!unlocked ? "opacity-75" : ""}`} onClick={unlocked ? () => go("level", { lvl }) : undefined}>
+            <Card key={lvl} className="p-5" onClick={() => go("level", { lvl })}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className={`w-12 h-12 grid place-items-center rounded-2xl font-extrabold ${prog >= 100 ? "bg-brand-600 text-white" : unlocked ? "bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400" : "bg-mist/40 dark:bg-night-800 text-slate-400"}`}>
-                    {prog >= 100 ? <Check size={20} /> : !unlocked ? <Lock size={17} /> : lvl}
+                  <span className={`w-12 h-12 grid place-items-center rounded-2xl font-extrabold ${prog >= 100 ? "bg-brand-600 text-white" : "bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-400"}`}>
+                    {prog >= 100 ? <Check size={20} /> : lvl}
                   </span>
                   <div>
                     <b className="uppercase tracking-wide text-[13px]">{lvl} {meta.name}</b>
                     <div className="text-xs text-ink-2 dark:text-slate-400">
-                      {unlocked
-                        ? `${prog}% · ${levelLessonCount(lvl)} ${t("lessons")} · ${levelWordCount(lvl)} ${t("words")}`
-                        : `${t("requirement")}: ${t("master_prev", { lvl: LEVELS[prevIdx] })}`}
+                      {prog}% · {levelLessonCount(lvl)} {t("lessons")} · {levelWordCount(lvl)} {t("words")}
                     </div>
                   </div>
                 </div>
-                {!unlocked && <Chip>{t("locked")}</Chip>}
+                {!onTrack && <Chip>{t("recommended_later", { lvl: LEVELS[prevIdx] })}</Chip>}
                 {prog >= 100 && <Chip tone="good">✓</Chip>}
               </div>
-              {unlocked && <ProgressBar value={prog} className="mt-3" />}
+              <ProgressBar value={prog} className="mt-3" />
             </Card>
           );
         })}
