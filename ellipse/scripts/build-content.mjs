@@ -14,6 +14,16 @@ import { B2_TR_2 } from "./deep-tr-b2-2.mjs";
 import { QUIZ_TR } from "./quiz-tr.mjs";
 import { C1_LISTENING_TR, EXTRA_LISTENING, EXTRA_READING } from "./new-content.mjs";
 import { C1_TR } from "./deep-tr-c1.mjs";
+// Optional content modules (authored in batches): fall back to empty when absent.
+const opt = async (path, key) => { try { return (await import(path))[key] || {}; } catch { return {}; } };
+const ENRICH = await opt("./practice-enrich.mjs", "ENRICH");
+const STRATEGY_TR = await opt("./strategy-tr.mjs", "STRATEGY_TR");
+const QUIZ_TR_2 = await opt("./quiz-tr-2.mjs", "QUIZ_TR_2");
+const NEW_GRAMMAR = {
+  ...(await opt("./new-grammar-1.mjs", "NEW_GRAMMAR_1")),
+  ...(await opt("./new-grammar-2.mjs", "NEW_GRAMMAR_2")),
+  ...(await opt("./new-grammar-3.mjs", "NEW_GRAMMAR_3")),
+};
 
 // Hand-authored full lesson translations (situation, tip, blocks, quiz) for levels
 // whose source data ships without a TR section.
@@ -369,11 +379,21 @@ const vocabFor = (lvl) => {
 };
 
 // 2) Grammar-practice lessons from convention/craft topics (with uz/ru leads)
-const practiceLesson = (def) => ({
-  id: def.id, title: def.title, lead: def.lead, leadTr: def.leadTr, situation: "",
-  blocks: [], tip: "", examples: [], mistakes: [],
-  quiz: takeQuestions(def.pick[0], def.pick[2], { topic: def.pick[1] }),
-});
+const practiceLesson = (def, lvl) => {
+  const quiz = takeQuestions(def.pick[0], def.pick[2], { topic: def.pick[1] });
+  const en = ENRICH[lvl]?.[def.id];
+  return {
+    id: def.id, title: def.title, lead: def.lead, leadTr: def.leadTr,
+    situation: en?.situation || "", timeline: null, compare: null,
+    blocks: en?.blocks || [], tip: en?.tip || "",
+    examples: en?.examples || [], mistakes: en?.mistakes || [],
+    quiz,
+    tr: en ? {
+      situation: en.tr.situation || null, tip: en.tr.tip || null, blocks: en.tr.blocks,
+      quiz: en.tr.quiz.length === quiz.length ? en.tr.quiz : [],
+    } : null,
+  };
+};
 
 // 3) Reading sets: passage-based question collections
 const readingSet = (def) => ({
@@ -422,6 +442,8 @@ const STRATEGY = {
 };
 
 for (const level of levels) {
+  const ng = NEW_GRAMMAR[level.id];
+  if (ng) level.skills.grammar = [...level.skills.grammar, ...ng];
   const xr = EXTRA_READING[level.id];
   if (xr) level.skills.reading = [...level.skills.reading, ...xr];
   const xl = EXTRA_LISTENING[level.id];
@@ -429,14 +451,19 @@ for (const level of levels) {
   const extraVocab = vocabFor(level.id);
   if (extraVocab.length) level.skills.vocabulary = [...level.skills.vocabulary, ...extraVocab];
   const gp = GRAMMAR_PRACTICE[level.id];
-  if (gp) level.skills.grammar = [...level.skills.grammar, ...gp.map(practiceLesson).filter((l) => l.quiz.length >= 6)];
+  if (gp) level.skills.grammar = [...level.skills.grammar, ...gp.map((d) => practiceLesson(d, level.id)).filter((l) => l.quiz.length >= 6)];
   const rs = READING_SETS[level.id];
   if (rs) level.skills.reading = [...level.skills.reading, ...rs.map(readingSet).filter((l) => l.quiz.length >= 3)];
   if (level.id === "C1") level.skills.listening = [...C1_LISTENING.map((l) => ({ ...l, quizTr: C1_LISTENING_TR[l.id] || null })), ...level.skills.listening];
   const stR = STRATEGY.reading[level.id];
   if (stR) level.skills.reading = [...level.skills.reading, ...stR.filter((l) => l.quiz.length >= 3)];
   const stG = STRATEGY.grammar[level.id];
-  if (stG) level.skills.grammar = [...level.skills.grammar, ...stG.filter((l) => l.quiz.length >= 3)];
+  if (stG) level.skills.grammar = [...level.skills.grammar, ...stG.filter((l) => l.quiz.length >= 3).map((l) => {
+    const t = STRATEGY_TR[level.id]?.[l.id];
+    return t ? { ...l, leadTr: t.lead || null, tr: { situation: null, tip: t.tip || null, blocks: t.blocks, quiz: t.quiz } } : l;
+  })];
+  // backfill uz/ru quiz explanations for reading lessons that still lack them
+  level.skills.reading = level.skills.reading.map((l) => l.quizTr ? l : { ...l, quizTr: QUIZ_TR_2[level.id]?.[l.id] || null });
 }
 
 const out = { levels, placement, scenarios: [...SCENARIOS, ...EXTRA_SCENARIOS] };

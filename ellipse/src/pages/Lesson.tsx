@@ -94,7 +94,6 @@ function GrammarPlayer({ lvl, lesson }: { lvl: LevelId; lesson: GrammarLesson })
   const [stage, setStage] = useState<"learn" | "quiz" | "done">("learn");
   const [score, setScore] = useState(0);
   const [expLang, setExpLang] = useState<ExpLang>(s.uiLang);
-  const hasTr = !!(lesson.tr || lesson.leadTr);
   const tr = lesson.tr;
 
   const quizQs = lesson.quiz.map((q, i) => ({
@@ -106,7 +105,7 @@ function GrammarPlayer({ lvl, lesson }: { lvl: LevelId; lesson: GrammarLesson })
 
   if (stage === "quiz") return (
     <div>
-      {hasTr && <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>}
+      <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>
       <Card className="p-5">
         <QuizRunner
           questions={quizQs}
@@ -119,7 +118,7 @@ function GrammarPlayer({ lvl, lesson }: { lvl: LevelId; lesson: GrammarLesson })
 
   return (
     <div className="space-y-4 pb-6">
-      {hasTr && <LangSeg value={expLang} onChange={setExpLang} />}
+      <LangSeg value={expLang} onChange={setExpLang} />
       <Card className="p-5">
         <p className="text-[15px] leading-relaxed">{pickTr(expLang, lesson.leadTr, lesson.lead)}</p>
         {expLang !== "en" && lesson.leadTr && (
@@ -307,7 +306,7 @@ function ReadingPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ReadingLesson })
   if (stage === "done") return <CompleteScreen lvl={lvl} skill="reading" id={lesson.id} score={score} total={lesson.quiz.length} onRetry={() => { setScore(0); setStage("quiz"); }} />;
   if (stage === "quiz") return (
     <div>
-      {lesson.quizTr && <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>}
+      <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>
       <Card className="p-5"><QuizRunner questions={quizQs} onAnswer={(ok) => recordAnswer("reading", ok)} onDone={(sc) => { setScore(sc); setStage("done"); }} /></Card>
     </div>
   );
@@ -350,7 +349,7 @@ function ListeningPlayer({ lvl, lesson }: { lvl: LevelId; lesson: ListeningLesso
   if (stage === "done") return <CompleteScreen lvl={lvl} skill="listening" id={lesson.id} score={score} total={lesson.quiz.length} onRetry={() => { setScore(0); setStage("quiz"); }} />;
   if (stage === "quiz") return (
     <div>
-      {lesson.quizTr && <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>}
+      <div className="mb-3"><LangSeg value={expLang} onChange={setExpLang} /></div>
       <Card className="p-5"><QuizRunner questions={quizQs} onAnswer={(ok) => recordAnswer("listening", ok)} onDone={(sc) => { setScore(sc); setStage("done"); }} /></Card>
     </div>
   );
