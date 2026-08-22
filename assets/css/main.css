@@ -32,7 +32,7 @@ body[data-theme="chem"]{--accent:#f07500;--accent-soft:rgba(255,130,0,.11)}
 body[data-theme="eng"]{--accent:#00a5cf;--accent-soft:rgba(0,181,226,.10)}
 
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:auto}
+html{scroll-behavior:auto;overflow-x:hidden;overflow-x:clip;max-width:100%}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
 body{
@@ -40,7 +40,7 @@ body{
   background:var(--canvas);
   color:var(--ink);
   line-height:1.6;
-  overflow-x:hidden;
+  overflow-x:hidden;overflow-x:clip;max-width:100vw;
   -webkit-font-smoothing:antialiased;
 }
 ::selection{background:var(--accent);color:#fff}
@@ -216,7 +216,7 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 @keyframes drip{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 @media (max-width:900px){
   .hero .container{grid-template-columns:1fr}
-  .hero-3d{opacity:.35}
+  .hero-3d{opacity:.55}
 }
 
 /* ---------- stats ---------- */
@@ -822,7 +822,7 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
   .dd-panel{position:fixed;left:4vw;right:4vw;top:auto;bottom:4vh;max-height:60vh;display:flex;flex-direction:column}
   #dd-list{max-height:none;flex:1}
   .hero{min-height:92svh}
-  .hero-3d{opacity:.22}
+  .hero-3d{opacity:.5}
   .subj-hero .facts{gap:.6rem}
   .subj-hero .facts span{font-size:.78rem;padding:.4rem .8rem}
   .price .p-amount{font-size:2.2rem}
