@@ -23,38 +23,85 @@
   var key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(4, 6, 6); scene.add(key);
   var rim = new THREE.DirectionalLight(0xbfe9ff, 0.35); rim.position.set(-5, -2, -4); scene.add(rim);
 
-  var mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(accent), roughness: 0.32, metalness: 0.08 });
+  /* ---- 3D globe: From Singapore to the World ---- */
+  var globe = new THREE.Group();
+  var R = 2.3;
 
-  var icon = new THREE.Group();
+  // sphere wireframe shell
+  globe.add(new THREE.Mesh(
+    new THREE.SphereGeometry(R, 28, 20),
+    new THREE.MeshBasicMaterial({ color: 0x36454F, wireframe: true, transparent: true, opacity: 0.14 })
+  ));
+  // soft inner sphere for body
+  globe.add(new THREE.Mesh(
+    new THREE.SphereGeometry(R * 0.985, 40, 30),
+    new THREE.MeshStandardMaterial({ color: 0xf2f4f4, roughness: 0.9, metalness: 0, transparent: true, opacity: 0.55 })
+  ));
+  // equator ring
+  var eq = new THREE.Mesh(new THREE.TorusGeometry(R * 1.001, 0.012, 8, 90),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(accent), transparent: true, opacity: 0.65 }));
+  eq.rotation.x = Math.PI / 2;
+  globe.add(eq);
+  // tilted orbit ring
+  var orbit = new THREE.Mesh(new THREE.TorusGeometry(R * 1.45, 0.02, 8, 90),
+    new THREE.MeshBasicMaterial({ color: 0x36454F, transparent: true, opacity: 0.25 }));
+  orbit.rotation.x = 1.15; orbit.rotation.y = 0.4;
+  globe.add(orbit);
+  // satellite on the orbit ring
+  var sat = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16),
+    new THREE.MeshStandardMaterial({ color: new THREE.Color(accent), roughness: .3 }));
+  globe.add(sat);
 
-  function bar(w, h, x, y) {
-    var g = new THREE.BoxGeometry(w, h, w, 2, 2, 2);
-    var m = new THREE.Mesh(g, mat);
-    m.position.set(x, y, 0);
-    return m;
+  function latlon(lat, lon, r) {
+    var la = lat * Math.PI / 180, lo = lon * Math.PI / 180;
+    return new THREE.Vector3(r * Math.cos(la) * Math.cos(lo), r * Math.sin(la), -r * Math.cos(la) * Math.sin(lo));
   }
-  icon.add(bar(0.62, 0.95, -2.35, -1.5));   // small bar
-  icon.add(bar(0.78, 1.65, -1.15, -1.15));  // medium bar
 
-  // figure body: tapered cone, narrow at bottom
-  var body = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.16, 2.6, 40), mat);
-  body.position.set(0.45, -0.7, 0);
-  body.rotation.z = -0.06;
-  icon.add(body);
+  // scattered surface dots (world texture impression)
+  (function () {
+    var n = 350, p = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      var v = latlon(Math.asin(Math.random() * 2 - 1) * 180 / Math.PI, Math.random() * 360 - 180, R * 1.002);
+      p[i * 3] = v.x; p[i * 3 + 1] = v.y; p[i * 3 + 2] = v.z;
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    globe.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0x36454F, size: 0.045, transparent: true, opacity: 0.55 })));
+  })();
 
-  var head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 40, 40), mat);
-  head.position.set(0.45, 1.1, 0);
-  icon.add(head);
+  // Singapore beacon + flight arcs to partner countries, with traveling pulses
+  var SG = latlon(1.35, 103.82, R);
+  var sgDot = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 16),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(accent) }));
+  sgDot.position.copy(SG);
+  globe.add(sgDot);
 
-  // raised arm tip
-  var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.3, 1.15, 24), mat);
-  arm.position.set(1.15, 0.75, 0);
-  arm.rotation.z = -0.7;
-  icon.add(arm);
+  var DEST = [[48,67],[-6.2,106.8],[13.7,100.5],[47.9,106.9],[16.8,96.2],[9,8.7],[30.4,69.3],
+              [14.6,121],[24.7,46.7],[44,21],[38,58],[41.3,69.2],[21,105.8],[3.1,101.7]];
+  var ARC_COLORS = ['#F4364C','#26D07C','#FF8200','#D9027D','#0050B5','#FFB81C','#00B5E2'];
+  var pulses = [];
+  DEST.forEach(function (d, k) {
+    var end = latlon(d[0], d[1], R);
+    var mid = SG.clone().add(end).multiplyScalar(0.5).normalize()
+      .multiplyScalar(R * (1.25 + 0.18 * Math.random()));
+    var curve = new THREE.QuadraticBezierCurve3(SG, mid, end);
+    var pts = curve.getPoints(48);
+    var g = new THREE.BufferGeometry().setFromPoints(pts);
+    var col = new THREE.Color(ARC_COLORS[k % ARC_COLORS.length]);
+    globe.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.42 })));
+    var endDot = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), new THREE.MeshBasicMaterial({ color: col }));
+    endDot.position.copy(end);
+    globe.add(endDot);
+    var pulse = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 10),
+      new THREE.MeshBasicMaterial({ color: col }));
+    pulse.userData = { curve: curve, offset: k / DEST.length };
+    globe.add(pulse);
+    pulses.push(pulse);
+  });
 
-  icon.position.x = small ? 0 : 2.1;
-  icon.rotation.y = -0.35;
-  scene.add(icon);
+  globe.position.x = small ? 0 : 2.3;
+  globe.rotation.z = 0.18;
+  scene.add(globe);
 
   /* particles — subject-colored constellation */
   var COLORS = ['#26D07C', '#FF8200', '#D9027D', '#0050B5', '#FFB81C', '#00B5E2', '#F4364C'];
@@ -119,12 +166,17 @@
     var t = clock.getElapsedTime();
     sx += (mx - sx) * 0.05; sy += (my - sy) * 0.05;
 
-    icon.rotation.y = -0.35 + sx * 0.55 + t * 0.08;
-    icon.rotation.x = sy * 0.3;
-    icon.position.y = Math.sin(t * 0.8) * 0.12 + scrollP * 2.2;
-    icon.children.forEach(function (m, i) {
-      m.position.z = Math.sin(t * 0.7 + i) * 0.08 + scrollP * (i - 2) * 1.4;
-    });
+    globe.rotation.y = t * 0.14 + sx * 0.5;
+    globe.rotation.x = sy * 0.25;
+    globe.position.y = Math.sin(t * 0.7) * 0.1 + scrollP * 2.0;
+    var oa = t * 0.9;
+    sat.position.set(Math.cos(oa) * R * 1.45, Math.sin(oa) * R * 1.45 * Math.sin(1.15), Math.sin(oa) * R * 1.45 * Math.cos(1.15));
+    for (var pi = 0; pi < pulses.length; pi++) {
+      var pu = pulses[pi];
+      var tt = (t * 0.22 + pu.userData.offset) % 1;
+      pu.position.copy(pu.userData.curve.getPoint(tt));
+      pu.scale.setScalar(0.6 + 0.8 * Math.sin(tt * Math.PI));
+    }
 
     points.rotation.y = t * 0.02 + sx * 0.1;
     points.position.y = scrollP * 1.2;
