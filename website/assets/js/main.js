@@ -96,20 +96,20 @@
   var burger = document.querySelector('.burger');
   var overlay = document.querySelector('.menu-overlay');
   if (burger && overlay) {
-    burger.addEventListener('click', function () {
-      var open = overlay.classList.toggle('open');
+    function setMenu(open) {
+      overlay.classList.toggle('open', open);
       burger.classList.toggle('open', open);
+      overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
       document.body.style.overflow = open ? 'hidden' : '';
-      if (open && hasGsap && !reduced) {
-        gsap.fromTo('.menu-overlay nav a', { y: 40, opacity: 0 },
-          { y: 0, opacity: 1, stagger: .06, duration: .5, ease: 'power3.out', delay: .25 });
-      }
+    }
+    burger.addEventListener('click', function () {
+      setMenu(!overlay.classList.contains('open'));
     });
     overlay.querySelectorAll('a').forEach(function (a) {
-      a.addEventListener('click', function () {
-        overlay.classList.remove('open'); burger.classList.remove('open');
-        document.body.style.overflow = '';
-      });
+      a.addEventListener('click', function () { setMenu(false); });
+    });
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) setMenu(false);
     });
   }
 
@@ -232,72 +232,84 @@
     });
   }
 
-  /* ---------------- 3D gallery slider ---------------- */
+  /* ---------------- 3D ring gallery: infinite loop + momentum ---------------- */
   var gallery = document.querySelector('.gallery');
   if (gallery) {
+    var stage = gallery.querySelector('.gallery-stage');
     var cards = [].slice.call(gallery.querySelectorAll('.g-card'));
     var count = cards.length;
-    var current = 0, target = 0, dragging = false, startX = 0, startTarget = 0;
-    var autoTimer = null;
+    var step = 360 / count;
+    var rot = 0, targetRot = 0, vel = 0;
+    var dragging = false, lastX = 0, movedPx = 0;
+    var idleSpin = reduced ? 0 : -0.045;   // slow endless loop
+    var radius = 500;
+
+    function measure() {
+      var cardW = cards[0].offsetWidth || 320;
+      // ring radius so cards don't overlap: circumference ≈ count * (cardW * 1.15)
+      radius = Math.max((count * cardW * 1.12) / (2 * Math.PI), cardW * 1.05);
+      gallery.style.perspective = Math.round(radius * 3.2) + 'px';
+    }
+    measure();
 
     function layout() {
-      cards.forEach(function (card, i) {
-        var off = i - current;
-        // wrap for infinite feel
-        if (off > count / 2) off -= count;
-        if (off < -count / 2) off += count;
-        var abs = Math.abs(off);
-        var x = off * Math.min(gallery.offsetWidth * .32, 340);
-        var z = -abs * 190;
-        var ry = -off * 14;
-        var op = abs > 3.2 ? 0 : 1 - abs * .16;
-        card.style.transform = 'translate(-50%,-50%) translate3d(' + x + 'px,0,' + z + 'px) rotateY(' + ry + 'deg)';
-        card.style.opacity = op;
-        card.style.zIndex = 100 - Math.round(abs * 10);
-      });
+      for (var i = 0; i < count; i++) {
+        var a = i * step + rot;                       // degrees
+        var rad = a * Math.PI / 180;
+        var depth = Math.cos(rad);                    // 1 = front, -1 = back
+        cards[i].style.transform =
+          'translate(-50%,-50%) rotateY(' + a + 'deg) translateZ(' + radius + 'px)';
+        cards[i].style.opacity = depth < -0.35 ? 0 : 0.35 + 0.65 * (depth + 0.35) / 1.35;
+        cards[i].style.zIndex = Math.round(100 + depth * 100);
+        cards[i].style.setProperty('--dim', String(Math.max(0, (1 - depth) * 0.28)));
+      }
     }
-    function tick() {
-      current += (target - current) * (reduced ? 1 : 0.09);
+
+    (function tick() {
+      if (!dragging) {
+        targetRot += idleSpin + vel;
+        vel *= 0.94;                                   // momentum decay
+        if (Math.abs(vel) < 0.002) vel = 0;
+      }
+      rot += (targetRot - rot) * (reduced ? 1 : 0.12);
       layout();
       requestAnimationFrame(tick);
-    }
-    tick();
+    })();
 
-    function go(dir) { target = Math.round(target + dir); restartAuto(); }
     gallery.addEventListener('pointerdown', function (e) {
-      dragging = true; startX = e.clientX; startTarget = target;
+      dragging = true; lastX = e.clientX; movedPx = 0; vel = 0;
+      gallery.classList.add('dragging');
       gallery.setPointerCapture(e.pointerId);
     });
     gallery.addEventListener('pointermove', function (e) {
       if (!dragging) return;
-      target = startTarget - (e.clientX - startX) / 220;
+      var dx = e.clientX - lastX; lastX = e.clientX; movedPx += Math.abs(dx);
+      targetRot += dx * 0.22;
+      vel = dx * 0.09;                                 // carry into momentum
     });
     ['pointerup', 'pointercancel'].forEach(function (ev) {
       gallery.addEventListener(ev, function () {
-        if (!dragging) return;
-        dragging = false; target = Math.round(target); restartAuto();
+        dragging = false;
+        gallery.classList.remove('dragging');
       });
     });
     gallery.addEventListener('wheel', function (e) {
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
         e.preventDefault();
-        target += e.deltaX * 0.004;
-        clearTimeout(gallery._wt);
-        gallery._wt = setTimeout(function () { target = Math.round(target); }, 140);
+        targetRot -= e.deltaX * 0.12;
       }
     }, { passive: false });
-    document.querySelectorAll('[data-gallery-prev]').forEach(function (b) { b.addEventListener('click', function () { go(-1); }); });
-    document.querySelectorAll('[data-gallery-next]').forEach(function (b) { b.addEventListener('click', function () { go(1); }); });
-    window.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowLeft') go(-1);
-      if (e.key === 'ArrowRight') go(1);
+    document.querySelectorAll('[data-gallery-prev]').forEach(function (b) {
+      b.addEventListener('click', function () { targetRot += step; vel = 0; });
     });
-    function restartAuto() {
-      clearInterval(autoTimer);
-      if (!reduced) autoTimer = setInterval(function () { target += 1; }, 4200);
-    }
-    restartAuto();
-    window.addEventListener('resize', layout);
+    document.querySelectorAll('[data-gallery-next]').forEach(function (b) {
+      b.addEventListener('click', function () { targetRot -= step; vel = 0; });
+    });
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') targetRot += step;
+      if (e.key === 'ArrowRight') targetRot -= step;
+    });
+    window.addEventListener('resize', function () { measure(); });
   }
 
   /* ---------------- video lightbox ---------------- */
