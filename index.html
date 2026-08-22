@@ -311,8 +311,16 @@
         <p class="eyebrow">Official representatives</p>
         <h2 class="display-lg" data-split>Find STEMCO in your country</h2>
         <p class="lead" data-reveal style="margin:1.4rem 0 2.4rem">Pick your country from the list to find the official STEMCO representative near you, or raise your hand to become the partner for your country.</p>
-        <div class="finder-select field" data-reveal>
-          <select id="country-select" aria-label="Choose your country"></select>
+        <div class="finder-dd" data-reveal>
+          <button type="button" class="dd-btn" id="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+            <img id="dd-flag" src="https://flagcdn.com/w40/sg.png" alt="" width="26">
+            <span id="dd-label">Singapore</span>
+            <span class="dd-chev">▾</span>
+          </button>
+          <div class="dd-panel" id="dd-panel">
+            <input type="search" id="dd-search" placeholder="Search country…" autocomplete="off" aria-label="Search country">
+            <ul id="dd-list" role="listbox" aria-label="Countries"></ul>
+          </div>
         </div>
         <p class="form-note" data-reveal style="color:rgba(238,242,244,.55)">Your country not on the list or has no representative yet? <a href="register.html#partner" style="text-decoration:underline">Become the partner →</a></p>
       </div>
@@ -335,7 +343,7 @@
   </div>
   <script>
   (function(){
-    var COUNTRIES=[["Singapore","sg"],["Angola","ao"],["Azerbaijan","az"],["Bahrain","bh"],["Bosnia and Herzegovina","ba"],["Cambodia","kh"],["Canada","ca"],["Cyprus","cy"],["Czech Republic","cz"],["Egypt","eg"],["Germany","de"],["Gibraltar","gi"],["Hong Kong","hk"],["India","in"],["Indonesia","id"],["Iran","ir"],["Japan","jp"],["Kazakhstan","kz"],["Kyrgyzstan","kg"],["Laos","la"],["Macau","mo"],["Malawi","mw"],["Malaysia","my"],["Mexico","mx"],["Mongolia","mn"],["Myanmar","mm"],["Nigeria","ng"],["North Macedonia","mk"],["Pakistan","pk"],["Peru","pe"],["Philippines","ph"],["Romania","ro"],["Russia","ru"],["Serbia","rs"],["South Africa","za"],["South Korea","kr"],["Taiwan","tw"],["Tajikistan","tj"],["Thailand","th"],["Turkey","tr"],["Turkmenistan","tm"],["Ukraine","ua"],["United Arab Emirates","ae"],["United Kingdom","gb"],["United States","us"],["Uzbekistan","uz"],["Vietnam","vn"]];
+    var COUNTRIES=[["Afghanistan","af"],["Albania","al"],["Algeria","dz"],["Andorra","ad"],["Angola","ao"],["Antigua and Barbuda","ag"],["Argentina","ar"],["Armenia","am"],["Australia","au"],["Austria","at"],["Azerbaijan","az"],["Bahamas","bs"],["Bahrain","bh"],["Bangladesh","bd"],["Barbados","bb"],["Belarus","by"],["Belgium","be"],["Belize","bz"],["Benin","bj"],["Bhutan","bt"],["Bolivia","bo"],["Bosnia and Herzegovina","ba"],["Botswana","bw"],["Brazil","br"],["Brunei","bn"],["Bulgaria","bg"],["Burkina Faso","bf"],["Burundi","bi"],["Cambodia","kh"],["Cameroon","cm"],["Canada","ca"],["Cape Verde","cv"],["Central African Republic","cf"],["Chad","td"],["Chile","cl"],["China","cn"],["Colombia","co"],["Comoros","km"],["Congo","cg"],["Costa Rica","cr"],["Croatia","hr"],["Cuba","cu"],["Cyprus","cy"],["Czech Republic","cz"],["DR Congo","cd"],["Denmark","dk"],["Djibouti","dj"],["Dominica","dm"],["Dominican Republic","do"],["Ecuador","ec"],["Egypt","eg"],["El Salvador","sv"],["Equatorial Guinea","gq"],["Eritrea","er"],["Estonia","ee"],["Eswatini","sz"],["Ethiopia","et"],["Fiji","fj"],["Finland","fi"],["France","fr"],["Gabon","ga"],["Gambia","gm"],["Georgia","ge"],["Germany","de"],["Ghana","gh"],["Gibraltar","gi"],["Greece","gr"],["Grenada","gd"],["Guatemala","gt"],["Guinea","gn"],["Guinea-Bissau","gw"],["Guyana","gy"],["Haiti","ht"],["Honduras","hn"],["Hong Kong","hk"],["Hungary","hu"],["Iceland","is"],["India","in"],["Indonesia","id"],["Iran","ir"],["Iraq","iq"],["Ireland","ie"],["Israel","il"],["Italy","it"],["Ivory Coast","ci"],["Jamaica","jm"],["Japan","jp"],["Jordan","jo"],["Kazakhstan","kz"],["Kenya","ke"],["Kiribati","ki"],["Kosovo","xk"],["Kuwait","kw"],["Kyrgyzstan","kg"],["Laos","la"],["Latvia","lv"],["Lebanon","lb"],["Lesotho","ls"],["Liberia","lr"],["Libya","ly"],["Liechtenstein","li"],["Lithuania","lt"],["Luxembourg","lu"],["Macau","mo"],["Madagascar","mg"],["Malawi","mw"],["Malaysia","my"],["Maldives","mv"],["Mali","ml"],["Malta","mt"],["Marshall Islands","mh"],["Mauritania","mr"],["Mauritius","mu"],["Mexico","mx"],["Micronesia","fm"],["Moldova","md"],["Monaco","mc"],["Mongolia","mn"],["Montenegro","me"],["Morocco","ma"],["Mozambique","mz"],["Myanmar","mm"],["Namibia","na"],["Nauru","nr"],["Nepal","np"],["Netherlands","nl"],["New Zealand","nz"],["Nicaragua","ni"],["Niger","ne"],["Nigeria","ng"],["North Korea","kp"],["North Macedonia","mk"],["Norway","no"],["Oman","om"],["Pakistan","pk"],["Palau","pw"],["Palestine","ps"],["Panama","pa"],["Papua New Guinea","pg"],["Paraguay","py"],["Peru","pe"],["Philippines","ph"],["Poland","pl"],["Portugal","pt"],["Qatar","qa"],["Romania","ro"],["Russia","ru"],["Rwanda","rw"],["Saint Kitts and Nevis","kn"],["Saint Lucia","lc"],["Saint Vincent and the Grenadines","vc"],["Samoa","ws"],["San Marino","sm"],["Sao Tome and Principe","st"],["Saudi Arabia","sa"],["Senegal","sn"],["Serbia","rs"],["Seychelles","sc"],["Sierra Leone","sl"],["Singapore","sg"],["Slovakia","sk"],["Slovenia","si"],["Solomon Islands","sb"],["Somalia","so"],["South Africa","za"],["South Korea","kr"],["South Sudan","ss"],["Spain","es"],["Sri Lanka","lk"],["Sudan","sd"],["Suriname","sr"],["Sweden","se"],["Switzerland","ch"],["Syria","sy"],["Taiwan","tw"],["Tajikistan","tj"],["Tanzania","tz"],["Thailand","th"],["Timor-Leste","tl"],["Togo","tg"],["Tonga","to"],["Trinidad and Tobago","tt"],["Tunisia","tn"],["Turkey","tr"],["Turkmenistan","tm"],["Tuvalu","tv"],["Uganda","ug"],["Ukraine","ua"],["United Arab Emirates","ae"],["United Kingdom","gb"],["United States","us"],["Uruguay","uy"],["Uzbekistan","uz"],["Vanuatu","vu"],["Vatican City","va"],["Venezuela","ve"],["Vietnam","vn"],["Yemen","ye"],["Zambia","zm"],["Zimbabwe","zw"]];
     var REPS={
       "Singapore":{org:"StemCo — Home Country",site:"https://stemco.org",person:"Sarvar Khaidarow",email:"bestyourself@stemco.org",phone:"+65 8354 3926"},
       "Hong Kong":{org:"Miss Man International Education Ltd",site:"https://www.missmaneducation.com",person:"Ivan Lam, Irene Man",email:"hkoffice@missmaneducation.com",phone:"+852 6714 3779 · WhatsApp +852 5918 5176"},
@@ -344,17 +352,45 @@
       "Pakistan":{org:"Creative Learning Services",site:"https://kangaroo.org.pk",person:"Awais Naeem Mughal",email:"info.iksc@kangaroo.org.pk",phone:"0321-8882252 (WhatsApp) · 0324-4219999 (Telegram)"},
       "Mongolia":{org:"StemCo Mongolia",site:"",person:"Ulambayar Otgon",email:"stemcomongolia@gmail.com",phone:"+976 9902 9026 (WhatsApp / Viber / Telegram)"},
       "Vietnam":{org:"Fermat Education",site:"https://olympic.fermat.edu.vn",person:"Vu Thi Thuy Ha",email:"havtt@fermat.edu.vn",phone:"+84 766 289 865"},
-      "Uzbekistan":{org:"Skills Lab",site:"https://www.skillslabedu.uz",person:"Tukhtasinova Azizakhon",email:"t.azizakhon@gmail.com",phone:"+998 93 590 05 05"}
+      "Uzbekistan":{org:"Skills Lab",site:"https://www.skillslabedu.uz",person:"Tukhtasinova Azizakhon",email:"t.azizakhon@gmail.com",phone:"+998 93 590 05 05"},
+      "Kazakhstan":{org:"Eduverse",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Indonesia":{org:"Abak Academy",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Thailand":{org:"Meta Knowledge",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Myanmar":{org:"Gravity",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Nigeria":{org:"Edubridge",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Philippines":{org:"Maths Trainers' Guild",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Saudi Arabia":{org:"Contest Bag",site:"",person:"",email:"bestyourself@stemco.org",phone:""},
+      "Turkmenistan":{org:"Kamil Bilim",site:"",person:"",email:"bestyourself@stemco.org",phone:""}
     };
-    var sel=document.getElementById('country-select');
-    if(!sel) return;
-    COUNTRIES.forEach(function(c){
-      var o=document.createElement('option'); o.value=c[0]; o.dataset.iso=c[1]; o.textContent=c[0]; sel.appendChild(o);
-    });
-    function show(name){
-      var iso=(COUNTRIES.find(function(c){return c[0]===name})||["","sg"])[1];
+    var btn=document.getElementById('dd-btn'), panel=document.getElementById('dd-panel'),
+        list=document.getElementById('dd-list'), search=document.getElementById('dd-search'),
+        dd=btn && btn.closest('.finder-dd');
+    if(!btn) return;
+    function flag(iso,w){return 'https://flagcdn.com/w'+w+'/'+iso+'.png'}
+    function render(filter){
+      var f=(filter||'').toLowerCase();
+      list.innerHTML='';
+      COUNTRIES.forEach(function(c){
+        if(f && c[0].toLowerCase().indexOf(f)===-1) return;
+        var li=document.createElement('li');
+        li.setAttribute('role','option');
+        li.innerHTML='<img loading="lazy" src="'+flag(c[1],40)+'" alt="" width="24">'+
+          '<span>'+c[0]+'</span>'+(REPS[c[0]]?'<i class="dd-rep">rep</i>':'');
+        li.addEventListener('click',function(){pick(c[0],c[1]);close();});
+        list.appendChild(li);
+      });
+    }
+    function open(){dd.classList.add('open');btn.setAttribute('aria-expanded','true');search.value='';render('');setTimeout(function(){search.focus()},50);}
+    function close(){dd.classList.remove('open');btn.setAttribute('aria-expanded','false');}
+    btn.addEventListener('click',function(){dd.classList.contains('open')?close():open();});
+    document.addEventListener('click',function(e){if(dd && !dd.contains(e.target))close();});
+    window.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+    search.addEventListener('input',function(){render(search.value);});
+    function pick(name,iso){
+      document.getElementById('dd-flag').src=flag(iso,40);
+      document.getElementById('dd-label').textContent=name;
       var r=REPS[name];
-      document.getElementById('rep-flag').src='https://flagcdn.com/w80/'+iso+'.png';
+      document.getElementById('rep-flag').src=flag(iso,80);
       document.getElementById('rep-country').textContent=name;
       var badge=document.getElementById('rep-badge'), cta=document.getElementById('rep-cta');
       var dl=document.querySelector('#rep-card dl');
@@ -363,16 +399,16 @@
         dl.style.display=''; cta.style.display='none';
         document.getElementById('rep-org').textContent=r.org;
         document.getElementById('rep-site').innerHTML=r.site?('<a href="'+r.site+'" target="_blank" rel="noopener">'+r.site.replace(/^https?:\/\/(www\.)?/,'')+'</a>'):'—';
-        document.getElementById('rep-person').textContent=r.person;
+        document.getElementById('rep-person').textContent=r.person||'—';
         document.getElementById('rep-email').innerHTML='<a href="mailto:'+r.email+'">'+r.email+'</a>';
-        document.getElementById('rep-phone').textContent=r.phone;
+        document.getElementById('rep-phone').textContent=r.phone||'—';
       }else{
         badge.textContent='No representative yet'; badge.classList.add('none');
         dl.style.display='none'; cta.style.display='inline-flex';
       }
     }
-    sel.addEventListener('change',function(){show(sel.value)});
-    show('Singapore');
+    render('');
+    pick('Singapore','sg');
   })();
   </script>
 </section>
