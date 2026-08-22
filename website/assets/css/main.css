@@ -571,3 +571,81 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
   [data-reveal]{opacity:1!important;transform:none!important}
   .hero{min-height:auto;padding:3rem 0}
 }
+
+/* ---------- country finder ---------- */
+.finder-select select{
+  width:100%;padding:1.1rem 1.2rem;border-radius:14px;font:inherit;font-weight:600;
+  background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.2);color:#fff;
+  outline:none;cursor:pointer;
+}
+.finder-select select:focus{border-color:var(--amaranth)}
+.finder-select select option{color:var(--ink)}
+.rep-card{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);
+  border-radius:var(--radius);padding:2rem;box-shadow:0 30px 70px -40px rgba(0,0,0,.8);
+}
+.rep-card header{display:flex;align-items:center;gap:1rem;margin-bottom:1.6rem;flex-wrap:wrap}
+.rep-card header img{border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.rep-card h3{font-size:1.4rem;text-transform:uppercase;letter-spacing:.04em;flex:1}
+.rep-badge{
+  font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  border:1.5px solid #7fd88f;color:#7fd88f;border-radius:999px;padding:.4rem .9rem;white-space:nowrap;
+}
+.rep-badge.none{border-color:var(--amaranth);color:#ff8f9c}
+.rep-card dl{display:grid;gap:1rem}
+.rep-card dl>div{display:grid;grid-template-columns:130px 1fr;gap:1rem;align-items:baseline}
+.rep-card dt{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(238,242,244,.5)}
+.rep-card dd{font-size:.98rem}
+.rep-card dd a{color:#ff8f9c;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:560px){.rep-card dl>div{grid-template-columns:1fr;gap:.15rem}}
+
+/* ---------- global final days ---------- */
+.gf-hero{min-height:80svh}
+.gf-hero .hero-3d{opacity:.5}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+.day{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+  padding:1.9rem;position:relative;transition:transform .35s var(--ease-out),box-shadow .35s;
+}
+.day:hover{transform:translateY(-6px);box-shadow:0 24px 46px -24px var(--accent)}
+.day-num{
+  font-family:var(--font-display);font-weight:900;color:var(--accent);
+  font-size:1.35rem;margin-right:.7rem;
+}
+.day-date{font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(37,49,58,.55)}
+.day h3{margin:.7rem 0 .4rem;font-size:1.15rem}
+.day p{font-size:.9rem;color:rgba(37,49,58,.72)}
+.day-quote{color:var(--accent);font-size:1.15rem;margin-top:.7rem}
+@media (max-width:960px){.days{grid-template-columns:1fr 1fr}}
+@media (max-width:620px){.days{grid-template-columns:1fr}}
+.step--light{background:var(--paper);border-color:var(--line)}
+.step--light h3{color:var(--ink)}
+.step--light p{color:rgba(37,49,58,.72)}
+
+/* ---------- winners ---------- */
+.winners{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.winner{
+  display:flex;align-items:center;gap:.9rem;padding:1.1rem 1.3rem;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+}
+.winner .star{color:#FFB81C;font-size:1.2rem}
+.winner b{font-family:var(--font-display)}
+.winner span:last-child{margin-left:auto;font-size:.85rem;color:rgba(238,242,244,.6)}
+@media (max-width:900px){.winners{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.winners{grid-template-columns:1fr}.winner span:last-child{margin-left:0}}
+
+/* ---------- subject hero 3D ---------- */
+.subj-hero .visual{position:relative}
+#subj3d{position:absolute;inset:-18% -14%;z-index:0;pointer-events:none}
+#subj3d canvas{display:block}
+.subj-hero .visual img{position:relative;z-index:1}
+
+/* ---------- menu sub links ---------- */
+.menu-sub{display:block;font-family:var(--font-body);font-size:.92rem;font-weight:500;margin:-.3rem 0 .5rem 3rem}
+.menu-sub a{color:rgba(255,255,255,.65);font:inherit;transform:none;opacity:1;transition:color .25s}
+.menu-overlay.open .menu-sub a{opacity:1;transform:none}
+.menu-sub a:hover{color:var(--amaranth)}
+.menu-side p b{color:rgba(255,255,255,.9)}
+
+/* long footer slogan */
+.footer .sign{font-size:clamp(2.1rem,6.2vw,4.6rem)}

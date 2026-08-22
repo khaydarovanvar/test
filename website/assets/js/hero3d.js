@@ -132,3 +132,116 @@
     renderer.render(scene, cam);
   })();
 })();
+
+/* Extra floating 3D objects in the main hero field */
+(function () {
+  'use strict';
+  var host = document.getElementById('hero3d');
+  if (!host || typeof THREE === 'undefined') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // piggy-back on the scene the main IIFE created? Scenes are closed over —
+  // simplest: a second transparent canvas layered in the same host.
+  var scene = new THREE.Scene();
+  var cam = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  cam.position.set(0, 0, 9);
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.domElement.style.cssText = 'position:absolute;inset:0';
+  host.appendChild(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  var key = new THREE.DirectionalLight(0xffffff, 0.8); key.position.set(3, 5, 6); scene.add(key);
+
+  function mat(hex, opts) {
+    return new THREE.MeshStandardMaterial(Object.assign({ color: new THREE.Color(hex), roughness: .35, metalness: .1 }, opts || {}));
+  }
+  var objs = [];
+  function add(mesh, x, y, s, rs) {
+    mesh.position.set(x, y, -1.5 - Math.random() * 2);
+    mesh.scale.setScalar(s);
+    mesh.userData.rs = rs;
+    scene.add(mesh); objs.push(mesh);
+  }
+  add(new THREE.Mesh(new THREE.TorusGeometry(1, .34, 24, 60), mat('#0050B5')), -4.6, 1.9, .5, .35);
+  add(new THREE.Mesh(new THREE.IcosahedronGeometry(1, 0), mat('#26D07C', { flatShading: true })), -3.2, -1.8, .55, .5);
+  add(new THREE.Mesh(new THREE.TorusKnotGeometry(.8, .26, 90, 14), mat('#00B5E2')), 4.9, -1.6, .48, .4);
+  add(new THREE.Mesh(new THREE.OctahedronGeometry(1, 0), mat('#FFB81C', { flatShading: true })), 3.9, 2.3, .5, .6);
+  add(new THREE.Mesh(new THREE.ConeGeometry(.8, 1.5, 5), mat('#D9027D', { flatShading: true })), -1.6, 2.6, .45, .45);
+  add(new THREE.Mesh(new THREE.TorusGeometry(1, .12, 16, 50), mat('#FF8200')), 1.2, -2.7, .5, .3);
+
+  var mx = 0, my = 0, sx = 0, sy = 0, scrollP = 0;
+  window.addEventListener('mousemove', function (e) {
+    mx = e.clientX / window.innerWidth - .5; my = e.clientY / window.innerHeight - .5;
+  }, { passive: true });
+  window.addEventListener('scroll', function () {
+    scrollP = Math.min(1, window.scrollY / window.innerHeight);
+  }, { passive: true });
+  function size() {
+    renderer.setSize(host.clientWidth, host.clientHeight);
+    cam.aspect = host.clientWidth / host.clientHeight; cam.updateProjectionMatrix();
+  }
+  size(); window.addEventListener('resize', size);
+  var clock = new THREE.Clock(), visible = true;
+  new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(host);
+  (function anim() {
+    requestAnimationFrame(anim);
+    if (!visible) return;
+    var t = clock.getElapsedTime();
+    sx += (mx - sx) * .04; sy += (my - sy) * .04;
+    objs.forEach(function (o, i) {
+      o.rotation.x = t * o.userData.rs + i;
+      o.rotation.y = t * o.userData.rs * 1.3 + i * 2;
+      o.position.y += Math.sin(t * .9 + i * 1.7) * .0012;
+      o.position.x += Math.cos(t * .7 + i * 1.3) * .0008;
+    });
+    scene.position.x = sx * .8; scene.position.y = -sy * .5 + scrollP * 1.6;
+    renderer.render(scene, cam);
+  })();
+})();
+
+/* Subject-page mini scene: accent-colored shapes orbiting behind the logo */
+(function () {
+  'use strict';
+  var host = document.getElementById('subj3d');
+  if (!host || typeof THREE === 'undefined') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#F4364C';
+  var scene = new THREE.Scene();
+  var cam = new THREE.PerspectiveCamera(40, 1, .1, 50);
+  cam.position.z = 7;
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  host.appendChild(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff, .8));
+  var key = new THREE.DirectionalLight(0xffffff, .8); key.position.set(3, 4, 5); scene.add(key);
+  var m = new THREE.MeshStandardMaterial({ color: new THREE.Color(accent), roughness: .3, metalness: .12 });
+  var wire = new THREE.MeshBasicMaterial({ color: new THREE.Color(accent), wireframe: true, transparent: true, opacity: .35 });
+  var group = new THREE.Group();
+  var ico = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 0), m); ico.position.set(-2.2, 1.5, -1);
+  var knot = new THREE.Mesh(new THREE.TorusKnotGeometry(.7, .22, 80, 12), m); knot.position.set(2.4, -1.6, -1);
+  var ring = new THREE.Mesh(new THREE.TorusGeometry(2.6, .04, 12, 80), wire); ring.rotation.x = 1.1;
+  var oct = new THREE.Mesh(new THREE.OctahedronGeometry(.6, 0), m); oct.position.set(2.3, 1.9, -2);
+  group.add(ico, knot, ring, oct);
+  scene.add(group);
+  var mx = 0, sx = 0;
+  window.addEventListener('mousemove', function (e) { mx = e.clientX / window.innerWidth - .5; }, { passive: true });
+  function size() {
+    renderer.setSize(host.clientWidth, host.clientHeight);
+    cam.aspect = host.clientWidth / host.clientHeight; cam.updateProjectionMatrix();
+  }
+  size(); window.addEventListener('resize', size);
+  var clock = new THREE.Clock(), visible = true;
+  new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(host);
+  (function anim() {
+    requestAnimationFrame(anim);
+    if (!visible) return;
+    var t = clock.getElapsedTime();
+    sx += (mx - sx) * .05;
+    ico.rotation.set(t * .4, t * .5, 0);
+    knot.rotation.set(t * .3, t * .45, 0);
+    oct.rotation.set(t * .6, t * .4, 0);
+    ring.rotation.z = t * .12;
+    group.rotation.y = sx * .5;
+    group.position.y = Math.sin(t * .8) * .12;
+    renderer.render(scene, cam);
+  })();
+})();
