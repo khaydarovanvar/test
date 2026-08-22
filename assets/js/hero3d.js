@@ -300,71 +300,134 @@
   })();
 })();
 
-/* Partners globe — interactive dotted globe with partner arcs (drag to rotate) */
+/* Partners globe — dark glowing world with bright arc network (drag to spin) */
 (function () {
   'use strict';
   var host = document.getElementById('partners3d');
   if (!host || typeof THREE === 'undefined') return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    host.style.background = 'var(--accent-soft)';
-    return;
-  }
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var small = window.innerWidth < 760;
+
   var scene = new THREE.Scene();
   var cam = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
-  cam.position.set(0, 0.4, 9.5);
+  cam.position.set(0, 0.35, small ? 11.5 : 9.8);
   var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   host.appendChild(renderer.domElement);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-  var key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(4, 5, 6); scene.add(key);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  var key = new THREE.DirectionalLight(0xffffff, 0.7); key.position.set(5, 6, 6); scene.add(key);
+  var fill = new THREE.DirectionalLight(0xF4364C, 0.25); fill.position.set(-6, -3, 4); scene.add(fill);
 
-  var AMARANTH = '#F4364C';
-  var COLORS = ['#F4364C', '#26D07C', '#FF8200', '#D9027D', '#0050B5', '#FFB81C', '#00B5E2'];
+  var COLORS = ['#F4364C', '#26D07C', '#FF8200', '#D9027D', '#4D8DFF', '#FFB81C', '#00B5E2'];
   var R = 3.1;
   var globe = new THREE.Group();
 
-  globe.add(new THREE.Mesh(new THREE.SphereGeometry(R, 30, 22),
-    new THREE.MeshBasicMaterial({ color: 0x36454F, wireframe: true, transparent: true, opacity: 0.10 })));
-  globe.add(new THREE.Mesh(new THREE.SphereGeometry(R * 0.985, 42, 32),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, transparent: true, opacity: 0.7 })));
+  /* soft radial glow behind the globe (canvas sprite) */
+  function glowTexture(hex) {
+    var c = document.createElement('canvas'); c.width = c.height = 256;
+    var g = c.getContext('2d');
+    var grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    grad.addColorStop(0, hex + 'aa'); grad.addColorStop(0.4, hex + '33'); grad.addColorStop(1, hex + '00');
+    g.fillStyle = grad; g.fillRect(0, 0, 256, 256);
+    return new THREE.CanvasTexture(c);
+  }
+  var halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTexture('#F4364C'), transparent: true, opacity: 0.55, depthWrite: false
+  }));
+  halo.scale.setScalar(R * 4.4);
+  scene.add(halo);
+
+  /* the dark planet */
+  globe.add(new THREE.Mesh(new THREE.SphereGeometry(R, 48, 36),
+    new THREE.MeshStandardMaterial({ color: 0x27333d, roughness: 0.85, metalness: 0.1 })));
+  /* faint longitude/latitude cage just above the surface */
+  globe.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.004, 24, 16),
+    new THREE.MeshBasicMaterial({ color: 0x8fb0c4, wireframe: true, transparent: true, opacity: 0.10 })));
 
   function latlon(lat, lon, r) {
     var la = lat * Math.PI / 180, lo = lon * Math.PI / 180;
     return new THREE.Vector3(r * Math.cos(la) * Math.cos(lo), r * Math.sin(la), -r * Math.cos(la) * Math.sin(lo));
   }
-  // dot texture of the sphere
+
+  /* glowing city dots on the surface */
   (function () {
-    var n = 700, p = new Float32Array(n * 3);
+    var n = small ? 380 : 650, p = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    var c = new THREE.Color();
     for (var i = 0; i < n; i++) {
-      var v = latlon(Math.asin(Math.random() * 2 - 1) * 180 / Math.PI, Math.random() * 360 - 180, R);
+      var v = latlon(Math.asin(Math.random() * 2 - 1) * 180 / Math.PI, Math.random() * 360 - 180, R * 1.006);
       p[i * 3] = v.x; p[i * 3 + 1] = v.y; p[i * 3 + 2] = v.z;
+      c.set(Math.random() < 0.82 ? '#bfd3e0' : COLORS[i % COLORS.length]);
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
     }
     var g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(p, 3));
-    globe.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0x36454F, size: 0.05, transparent: true, opacity: 0.5 })));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    globe.add(new THREE.Points(g, new THREE.PointsMaterial({
+      size: 0.055, vertexColors: true, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    })));
   })();
 
-  var SG = latlon(1.35, 103.82, R);
-  var sg = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(AMARANTH) }));
-  sg.position.copy(SG); globe.add(sg);
-  var halo = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.22, 32),
-    new THREE.MeshBasicMaterial({ color: new THREE.Color(AMARANTH), side: THREE.DoubleSide, transparent: true, opacity: 0.7 }));
-  halo.position.copy(SG.clone().multiplyScalar(1.01));
-  halo.lookAt(SG.clone().multiplyScalar(2)); globe.add(halo);
+  /* equator ring + orbiting satellite */
+  var eq = new THREE.Mesh(new THREE.TorusGeometry(R * 1.02, 0.014, 8, 100),
+    new THREE.MeshBasicMaterial({ color: 0xF4364C, transparent: true, opacity: 0.5 }));
+  eq.rotation.x = Math.PI / 2;
+  globe.add(eq);
+  var orbitR = R * 1.5;
+  var orbit = new THREE.Mesh(new THREE.TorusGeometry(orbitR, 0.015, 8, 100),
+    new THREE.MeshBasicMaterial({ color: 0xbfd3e0, transparent: true, opacity: 0.28 }));
+  orbit.rotation.x = 1.25; orbit.rotation.y = 0.35;
+  scene.add(orbit);
+  var sat = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 14),
+    new THREE.MeshBasicMaterial({ color: 0xFFB81C }));
+  scene.add(sat);
+  var satGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTexture('#FFB81C'), transparent: true, opacity: 0.9, depthWrite: false
+  }));
+  satGlow.scale.setScalar(0.7);
+  scene.add(satGlow);
 
+  /* Singapore beacon with pulsing rings */
+  var SG = latlon(1.35, 103.82, R);
+  var sgDot = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xF4364C }));
+  sgDot.position.copy(SG);
+  globe.add(sgDot);
+  var sgGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTexture('#F4364C'), transparent: true, opacity: 1, depthWrite: false
+  }));
+  sgGlow.scale.setScalar(0.9); sgGlow.position.copy(SG.clone().multiplyScalar(1.02));
+  globe.add(sgGlow);
+  var rings = [];
+  for (var ri = 0; ri < 3; ri++) {
+    var ring = new THREE.Mesh(new THREE.RingGeometry(0.14, 0.17, 32),
+      new THREE.MeshBasicMaterial({ color: 0xF4364C, side: THREE.DoubleSide, transparent: true, opacity: 0.8 }));
+    ring.position.copy(SG.clone().multiplyScalar(1.01));
+    ring.lookAt(SG.clone().multiplyScalar(3));
+    ring.userData.offset = ri / 3;
+    globe.add(ring); rings.push(ring);
+  }
+
+  /* bright tube arcs to partner countries + glowing pulses */
   var DEST = [[48,67],[-6.2,106.8],[13.7,100.5],[47.9,106.9],[16.8,96.2],[9,8.7],[30.4,69.3],
-              [14.6,121],[24.7,46.7],[44,21],[38,58],[41.3,69.2],[21,105.8],[3.1,101.7]];
+              [14.6,121],[24.7,46.7],[44,21],[38,58],[41.3,69.2],[21,105.8],[3.1,101.7],
+              [22.3,114.2],[41.3,-8.6],[11.5,104.9]];
   var pulses = [];
   DEST.forEach(function (d, k) {
     var end = latlon(d[0], d[1], R);
-    var mid = SG.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(R * (1.22 + 0.16 * Math.random()));
+    var mid = SG.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(R * (1.28 + 0.2 * Math.random()));
     var curve = new THREE.QuadraticBezierCurve3(SG, mid, end);
-    var col = new THREE.Color(COLORS[k % COLORS.length]);
-    globe.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(50)),
-      new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.5 })));
-    var ed = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 10), new THREE.MeshBasicMaterial({ color: col }));
+    var colHex = COLORS[k % COLORS.length];
+    var col = new THREE.Color(colHex);
+    globe.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.016, 6, false),
+      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.75,
+        blending: THREE.AdditiveBlending, depthWrite: false })));
+    var ed = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 12), new THREE.MeshBasicMaterial({ color: col }));
     ed.position.copy(end); globe.add(ed);
-    var pu = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 10), new THREE.MeshBasicMaterial({ color: col }));
+    var pu = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTexture(colHex), transparent: true, opacity: 1, depthWrite: false
+    }));
+    pu.scale.setScalar(0.5);
     pu.userData = { curve: curve, offset: k / DEST.length };
     globe.add(pu); pulses.push(pu);
   });
@@ -372,8 +435,24 @@
   globe.rotation.z = 0.12;
   scene.add(globe);
 
-  /* drag to rotate + inertia */
-  var rotY = -1.2, rotX = -0.1, velY = 0, dragging = false, lx = 0, ly = 0;
+  /* starfield around everything */
+  (function () {
+    var n = 220, p = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      var v = new THREE.Vector3().setFromSphericalCoords(
+        R * (1.9 + Math.random() * 2.6), Math.acos(Math.random() * 2 - 1), Math.random() * Math.PI * 2);
+      p[i * 3] = v.x; p[i * 3 + 1] = v.y; p[i * 3 + 2] = v.z;
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({
+      color: 0x9fb6c6, size: 0.045, transparent: true, opacity: 0.7,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    })));
+  })();
+
+  /* drag to spin + inertia (touch-friendly) */
+  var rotY = -1.2, rotX = -0.08, velY = 0, dragging = false, lx = 0, ly = 0;
   host.addEventListener('pointerdown', function (e) {
     dragging = true; lx = e.clientX; ly = e.clientY;
     host.classList.add('dragging'); host.setPointerCapture(e.pointerId);
@@ -401,14 +480,23 @@
     requestAnimationFrame(anim);
     if (!visible) return;
     var t = clock.getElapsedTime();
-    if (!dragging) { rotY += 0.0022 + velY; velY *= 0.95; }
+    if (!dragging) { rotY += 0.0035 + velY; velY *= 0.95; }
     globe.rotation.y = rotY;
-    globe.rotation.x = rotX;
+    globe.rotation.x = rotX + Math.sin(t * 0.3) * 0.03;
+    var oa = t * 0.55;
+    sat.position.set(Math.cos(oa) * orbitR, Math.sin(oa) * orbitR * Math.sin(1.25), Math.sin(oa) * orbitR * Math.cos(1.25));
+    satGlow.position.copy(sat.position);
     for (var i = 0; i < pulses.length; i++) {
       var pu = pulses[i];
-      var tt = (t * 0.2 + pu.userData.offset) % 1;
+      var tt = (t * 0.22 + pu.userData.offset) % 1;
       pu.position.copy(pu.userData.curve.getPoint(tt));
-      pu.scale.setScalar(0.6 + 0.9 * Math.sin(tt * Math.PI));
+      pu.scale.setScalar(0.3 + 0.5 * Math.sin(tt * Math.PI));
+    }
+    for (var r2 = 0; r2 < rings.length; r2++) {
+      var rg = rings[r2];
+      var rt = (t * 0.6 + rg.userData.offset) % 1;
+      rg.scale.setScalar(1 + rt * 2.6);
+      rg.material.opacity = 0.8 * (1 - rt);
     }
     renderer.render(scene, cam);
   })();
