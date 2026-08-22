@@ -118,7 +118,8 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 .nav.hidden{transform:translateY(-100%)}
 .nav .container{display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
 .nav .brand img{height:40px;width:auto}
-.nav-links{display:flex;gap:2rem;font-weight:500;font-size:.95rem}
+/* inline links retired — the awwwards overlay is the primary menu on all screens */
+.nav-links{display:none}
 .nav-links a{position:relative;padding:.3rem 0}
 .nav-links a::after{
   content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;
@@ -126,17 +127,13 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
   transition:transform .35s var(--ease-out);
 }
 .nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1);transform-origin:left}
-.burger{display:none;flex-direction:column;gap:6px;padding:.6rem;z-index:96}
+.burger{display:flex;flex-direction:column;gap:6px;padding:.6rem;z-index:96}
 .burger span{width:26px;height:2px;background:currentColor;transition:transform .35s,opacity .35s}
 .burger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}
 .burger.open span:nth-child(2){opacity:0}
 .burger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
 
 /* (menu overlay styles live in the v3 block near the end of this file) */
-@media (max-width:900px){
-  .nav-links{display:none}
-  .burger{display:flex}
-}
 
 /* ---------- buttons ---------- */
 .btn{
