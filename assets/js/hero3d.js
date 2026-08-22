@@ -252,32 +252,195 @@
   })();
 })();
 
-/* Subject-page mini scene: accent-colored shapes orbiting behind the logo */
+/* Subject pages — full-bleed themed 3D scene: per-subject centerpiece
+   (DNA / molecule / atom / knot / primitives / letters) + floating formula sprites */
 (function () {
   'use strict';
   var host = document.getElementById('subj3d');
   if (!host || typeof THREE === 'undefined') return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var theme = document.body.getAttribute('data-theme') || 'math';
+  var small = window.innerWidth < 760;
   var accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#F4364C';
+
   var scene = new THREE.Scene();
-  var cam = new THREE.PerspectiveCamera(40, 1, .1, 50);
-  cam.position.z = 7;
+  var cam = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  cam.position.set(0, 0.2, 10);
   var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   host.appendChild(renderer.domElement);
-  scene.add(new THREE.AmbientLight(0xffffff, .8));
-  var key = new THREE.DirectionalLight(0xffffff, .8); key.position.set(3, 4, 5); scene.add(key);
-  var m = new THREE.MeshStandardMaterial({ color: new THREE.Color(accent), roughness: .3, metalness: .12 });
-  var wire = new THREE.MeshBasicMaterial({ color: new THREE.Color(accent), wireframe: true, transparent: true, opacity: .35 });
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+  var key = new THREE.DirectionalLight(0xffffff, 0.8); key.position.set(4, 6, 6); scene.add(key);
+
+  var A = new THREE.Color(accent);
+  function mat(opts) {
+    return new THREE.MeshStandardMaterial(Object.assign({ color: A, roughness: .35, metalness: .1 }, opts || {}));
+  }
   var group = new THREE.Group();
-  var ico = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 0), m); ico.position.set(-2.2, 1.5, -1);
-  var knot = new THREE.Mesh(new THREE.TorusKnotGeometry(.7, .22, 80, 12), m); knot.position.set(2.4, -1.6, -1);
-  var ring = new THREE.Mesh(new THREE.TorusGeometry(2.6, .04, 12, 80), wire); ring.rotation.x = 1.1;
-  var oct = new THREE.Mesh(new THREE.OctahedronGeometry(.6, 0), m); oct.position.set(2.3, 1.9, -2);
-  group.add(ico, knot, ring, oct);
+  var movers = [];   // {obj, fn(t)}
+
+  function bondBetween(a, b, radius, material) {
+    var dir = new THREE.Vector3().subVectors(b, a);
+    var len = dir.length();
+    var cyl = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 10), material);
+    cyl.position.copy(a).add(b).multiplyScalar(0.5);
+    cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+    return cyl;
+  }
+
+  /* ---- centerpieces ---- */
+  function buildDNA() {
+    var turns = 2.2, steps = 46, R = 1.05, H = 5.6;
+    var sm = mat(), sm2 = mat({ color: 0x36454F, roughness: .5 });
+    var rungMat = new THREE.MeshBasicMaterial({ color: A, transparent: true, opacity: 0.4 });
+    for (var i = 0; i < steps; i++) {
+      var tt = i / steps, ang = tt * turns * Math.PI * 2, y = (tt - 0.5) * H;
+      var p1 = new THREE.Vector3(Math.cos(ang) * R, y, Math.sin(ang) * R);
+      var p2 = new THREE.Vector3(Math.cos(ang + Math.PI) * R, y, Math.sin(ang + Math.PI) * R);
+      var s1 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 10), sm); s1.position.copy(p1); group.add(s1);
+      var s2 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 10), sm2); s2.position.copy(p2); group.add(s2);
+      if (i % 3 === 0) group.add(bondBetween(p1, p2, 0.025, rungMat));
+    }
+    movers.push({ obj: group, fn: function (t) { group.rotation.y = t * 0.35; } });
+  }
+  function buildMolecule() {
+    var R = 1.5, atomM = mat(), cM = mat({ color: 0x36454F, roughness: .5 });
+    var bondM = new THREE.MeshBasicMaterial({ color: 0x36454F, transparent: true, opacity: 0.5 });
+    var pts = [];
+    for (var i = 0; i < 6; i++) {
+      var a = i / 6 * Math.PI * 2;
+      var p = new THREE.Vector3(Math.cos(a) * R, Math.sin(a) * R, 0);
+      pts.push(p);
+      var at = new THREE.Mesh(new THREE.SphereGeometry(0.28, 18, 18), i % 2 ? atomM : cM);
+      at.position.copy(p); group.add(at);
+    }
+    for (var j = 0; j < 6; j++) group.add(bondBetween(pts[j], pts[(j + 1) % 6], 0.05, bondM));
+    // two satellite atoms
+    [[2.5, 1.2, 0.6], [-2.4, -1.4, -0.5]].forEach(function (q, k) {
+      var p = new THREE.Vector3(q[0], q[1], q[2]);
+      var at = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 14), atomM);
+      at.position.copy(p); group.add(at);
+      group.add(bondBetween(pts[k * 3], p, 0.04, bondM));
+    });
+    movers.push({ obj: group, fn: function (t) { group.rotation.y = t * 0.3; group.rotation.x = Math.sin(t * 0.4) * 0.25; } });
+  }
+  function buildAtom() {
+    // nucleus cluster
+    var nm = mat(), nm2 = mat({ color: 0x36454F, roughness: .5 });
+    [[0,0,0],[0.28,0.1,0.1],[-0.15,0.25,-0.1],[0.05,-0.26,0.15]].forEach(function (p, i) {
+      var n = new THREE.Mesh(new THREE.SphereGeometry(0.26, 16, 16), i % 2 ? nm : nm2);
+      n.position.set(p[0], p[1], p[2]); group.add(n);
+    });
+    var ringM = new THREE.MeshBasicMaterial({ color: A, transparent: true, opacity: 0.45 });
+    for (var k = 0; k < 3; k++) {
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.02, 8, 80), ringM);
+      ring.rotation.x = Math.PI / 2; ring.rotation.y = k * Math.PI / 3;
+      group.add(ring);
+      var el = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 12), nm);
+      group.add(el);
+      (function (el, k) {
+        movers.push({ obj: el, fn: function (t) {
+          var a = t * (1.1 + k * 0.25) + k * 2.2;
+          var p = new THREE.Vector3(Math.cos(a) * 2.1, 0, Math.sin(a) * 2.1);
+          p.applyAxisAngle(new THREE.Vector3(0, 1, 0), k * Math.PI / 3);
+          p.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+          el.position.copy(p);
+        }});
+      })(el, k);
+    }
+    movers.push({ obj: group, fn: function (t) { group.rotation.z = 0.3 + Math.sin(t * 0.3) * 0.15; } });
+  }
+  function buildKnot() {
+    var knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.25, 0.34, 120, 16), mat());
+    group.add(knot);
+    var wire = new THREE.Mesh(new THREE.TorusKnotGeometry(1.55, 0.42, 60, 8),
+      new THREE.MeshBasicMaterial({ color: A, wireframe: true, transparent: true, opacity: 0.15 }));
+    group.add(wire);
+    var solids = [new THREE.TetrahedronGeometry(0.3), new THREE.OctahedronGeometry(0.3), new THREE.IcosahedronGeometry(0.28, 0)];
+    solids.forEach(function (g, i) {
+      var m = new THREE.Mesh(g, mat({ flatShading: true }));
+      group.add(m);
+      movers.push({ obj: m, fn: function (t) {
+        var a = t * 0.6 + i * 2.1;
+        m.position.set(Math.cos(a) * 2.6, Math.sin(a * 1.3) * 1.2, Math.sin(a) * 2.6);
+        m.rotation.set(t + i, t * 1.3, 0);
+      }});
+    });
+    movers.push({ obj: knot, fn: function (t) { knot.rotation.x = t * 0.25; knot.rotation.y = t * 0.35; wire.rotation.x = -t * 0.15; wire.rotation.y = -t * 0.2; } });
+  }
+  function buildSci() {
+    var tri = [
+      new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.2, 24), mat()),
+      new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 24), mat({ color: 0x36454F })),
+      new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), mat({ flatShading: true }))
+    ];
+    tri.forEach(function (m, i) {
+      group.add(m);
+      movers.push({ obj: m, fn: function (t) {
+        var a = t * 0.5 + i * (Math.PI * 2 / 3);
+        m.position.set(Math.cos(a) * 1.9, Math.sin(t * 0.8 + i) * 0.5, Math.sin(a) * 1.9);
+        m.rotation.set(t * 0.7 + i, t * 0.5, 0);
+      }});
+    });
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.03, 8, 80),
+      new THREE.MeshBasicMaterial({ color: A, transparent: true, opacity: 0.4 }));
+    ring.rotation.x = 1.2; group.add(ring);
+    movers.push({ obj: ring, fn: function (t) { ring.rotation.z = t * 0.2; } });
+  }
+  function textSprite(txt, hex, size) {
+    var c = document.createElement('canvas'); c.width = 256; c.height = 128;
+    var g = c.getContext('2d');
+    g.font = '700 72px Georgia, serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = hex;
+    g.fillText(txt, 128, 64);
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(c), transparent: true, opacity: 0.95, depthWrite: false
+    }));
+    sp.scale.set(size * 2, size, 1);
+    return sp;
+  }
+  function buildEng() {
+    ['A', '?', '!'].forEach(function (ch, i) {
+      var sp = textSprite(ch, accent, 1.6);
+      group.add(sp);
+      movers.push({ obj: sp, fn: function (t) {
+        var a = t * 0.45 + i * (Math.PI * 2 / 3);
+        sp.position.set(Math.cos(a) * 1.9, Math.sin(t * 0.7 + i * 2) * 0.7, Math.sin(a) * 1.9);
+      }});
+    });
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.04, 8, 80),
+      new THREE.MeshBasicMaterial({ color: A, transparent: true, opacity: 0.4 }));
+    ring.rotation.x = 1.3; group.add(ring);
+    movers.push({ obj: ring, fn: function (t) { ring.rotation.z = -t * 0.18; } });
+  }
+
+  ({ bio: buildDNA, chem: buildMolecule, phy: buildAtom, math: buildKnot, sci: buildSci, eng: buildEng }[theme] || buildKnot)();
+
+  group.position.x = small ? 0 : 2.9;
+  if (small) { group.scale.setScalar(0.62); group.position.y = -1.3; }
   scene.add(group);
-  var mx = 0, sx = 0;
-  window.addEventListener('mousemove', function (e) { mx = e.clientX / window.innerWidth - .5; }, { passive: true });
+
+  /* floating formula sprites, harvested from the page's formula field */
+  var labels = [].slice.call(document.querySelectorAll('.formula-field span'))
+    .map(function (el) { return el.textContent; }).slice(0, small ? 5 : 8);
+  var sprites = [];
+  labels.forEach(function (txt, i) {
+    var sp = textSprite(txt, accent, 0.8);
+    sp.material.opacity = 0.5;
+    sp.userData.seed = i * 1.7;
+    sp.position.set((Math.random() - 0.5) * (small ? 6 : 13), (Math.random() - 0.5) * 6, -2 - Math.random() * 4);
+    scene.add(sp); sprites.push(sp);
+  });
+
+  var mx = 0, my = 0, sx = 0, sy = 0, scrollP = 0;
+  window.addEventListener('mousemove', function (e) {
+    mx = e.clientX / window.innerWidth - .5; my = e.clientY / window.innerHeight - .5;
+  }, { passive: true });
+  window.addEventListener('scroll', function () {
+    scrollP = Math.min(1, window.scrollY / window.innerHeight);
+  }, { passive: true });
+
   function size() {
     renderer.setSize(host.clientWidth, host.clientHeight);
     cam.aspect = host.clientWidth / host.clientHeight; cam.updateProjectionMatrix();
@@ -289,13 +452,16 @@
     requestAnimationFrame(anim);
     if (!visible) return;
     var t = clock.getElapsedTime();
-    sx += (mx - sx) * .05;
-    ico.rotation.set(t * .4, t * .5, 0);
-    knot.rotation.set(t * .3, t * .45, 0);
-    oct.rotation.set(t * .6, t * .4, 0);
-    ring.rotation.z = t * .12;
-    group.rotation.y = sx * .5;
-    group.position.y = Math.sin(t * .8) * .12;
+    sx += (mx - sx) * .05; sy += (my - sy) * .05;
+    for (var i = 0; i < movers.length; i++) movers[i].fn(t);
+    group.rotation.y += sx * 0.002;
+    group.position.y += ((small ? -1.3 : 0) + Math.sin(t * 0.6) * 0.15 + scrollP * 1.8 - group.position.y) * 0.05;
+    for (var k = 0; k < sprites.length; k++) {
+      var sp = sprites[k];
+      sp.position.y += Math.sin(t * 0.5 + sp.userData.seed) * 0.0022;
+      sp.position.x += Math.cos(t * 0.4 + sp.userData.seed) * 0.0012;
+    }
+    scene.position.x = sx * 0.6; scene.position.y = -sy * 0.4;
     renderer.render(scene, cam);
   })();
 })();
