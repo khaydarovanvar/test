@@ -84,11 +84,12 @@
   /* ---------------- nav ---------------- */
   var nav = document.querySelector('.nav');
   var lastY = 0;
+  var navCanHide = window.matchMedia('(min-width: 901px) and (hover: hover)').matches;
   window.addEventListener('scroll', function () {
     var y = window.scrollY;
     if (nav) {
       nav.classList.toggle('scrolled', y > 30);
-      nav.classList.toggle('hidden', y > 400 && y > lastY);
+      nav.classList.toggle('hidden', navCanHide && y > 400 && y > lastY);
     }
     lastY = y;
   }, { passive: true });
@@ -191,6 +192,31 @@
         scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.4 }
       });
     });
+  }
+
+  /* ---------------- stats band: 3D parallax layers ---------------- */
+  if (hasGsap && !reduced) {
+    var statsSec = document.querySelector('.stats-3d');
+    if (statsSec) {
+      // ghost slogan scrubs sideways through the section
+      gsap.fromTo('.stats-ghost', { xPercent: 4 }, {
+        xPercent: -55, ease: 'none',
+        scrollTrigger: { trigger: statsSec, start: 'top bottom', end: 'bottom top', scrub: 0.5 }
+      });
+      // each stat card flies in from depth, then drifts at its own speed
+      statsSec.querySelectorAll('.stat').forEach(function (st, i) {
+        var d = parseFloat(st.dataset.depth) || 0.6;
+        gsap.from(st, {
+          z: -420, y: 90, opacity: 0, rotateX: 18,
+          duration: 1.1, ease: 'power3.out', delay: i * 0.1,
+          scrollTrigger: { trigger: statsSec, start: 'top 78%' }
+        });
+        gsap.fromTo(st, { y: d * 70 }, {
+          y: -d * 70, ease: 'none',
+          scrollTrigger: { trigger: statsSec, start: 'top bottom', end: 'bottom top', scrub: 0.4 }
+        });
+      });
+    }
   }
 
   /* ---------------- counters ---------------- */

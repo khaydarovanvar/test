@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0">
+<iframe id="f" src="index.html?noanim#stats" style="width:1440px;height:600px;border:0"></iframe>
+<div id="out" style="font:16px monospace;padding:12px;background:#fff"></div>
+<script>
+document.getElementById('f').onload=function(){
+  setTimeout(function(){
+    var d=document.getElementById('f').contentDocument;
+    var b=d.querySelector('.stat b');
+    var cs=d.defaultView.getComputedStyle(b);
+    var sheetCount=d.styleSheets.length, ruleInfo='';
+    try{ ruleInfo=' rules0='+(d.styleSheets[0].cssRules?d.styleSheets[0].cssRules.length:'blocked'); }catch(e){ ruleInfo=' err:'+e.message; }
+    document.getElementById('out').textContent=
+      'fontSize='+cs.fontSize+' family='+cs.fontFamily.slice(0,30)+' display='+cs.display+
+      ' | sheets='+sheetCount+ruleInfo+' | iframe.innerWidth='+d.defaultView.innerWidth;
+  },1500);
+};
+</script></body>
