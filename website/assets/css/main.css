@@ -973,3 +973,16 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 }
 .price-grid.two{grid-template-columns:1fr 1fr}
 @media (max-width:900px){.price-grid.two{grid-template-columns:1fr}}
+
+/* ---------- subject page v2: full-bleed 3D + marquee + brand ---------- */
+.subj3d-bg{position:absolute;inset:0;z-index:0;opacity:.85}
+.subj3d-bg canvas{display:block}
+.subj-hero .container{z-index:2}
+.subj-hero .formula-field{z-index:1}
+.subj-marquee{color:#fff}
+.subj-marquee .hand{font-size:1.4rem}
+.nav .brand img.subj-brand{height:56px;width:auto;max-width:170px;object-fit:contain}
+@media (max-width:900px){
+  .nav .brand img.subj-brand{height:46px}
+  .subj3d-bg{opacity:.45}
+}
