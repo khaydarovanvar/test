@@ -223,7 +223,8 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;text-align:center}
 .stat b{font-family:var(--font-display);font-weight:900;font-size:clamp(2.6rem,5.5vw,4.6rem);display:block;line-height:1}
 .stat b .plus{color:var(--accent)}
-.stat span{font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.stat > span{font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.stat b span{font-size:inherit;letter-spacing:inherit;text-transform:none;opacity:1}
 @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
 
 /* ---------- about / milestones ---------- */
@@ -837,4 +838,44 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
   .awards-note{font-size:.85rem}
   .schools-track img{height:40px}
   .footer{padding:4rem 0 2rem}
+}
+
+/* ---------- stats 3D parallax band ---------- */
+.stats-3d{overflow:hidden;padding:clamp(7rem,14vw,12rem) 0;perspective:1000px}
+.stats-3d-bg{position:absolute;inset:0;z-index:0;opacity:.8}
+.stats-ghost{
+  position:absolute;top:50%;left:0;transform:translateY(-50%);z-index:0;
+  font-family:var(--font-display);font-weight:900;white-space:nowrap;
+  font-size:clamp(6rem,16vw,15rem);line-height:1;
+  color:transparent;-webkit-text-stroke:1.5px rgba(54,69,79,.10);
+  pointer-events:none;will-change:transform;
+}
+.stats-3d .container{position:relative;z-index:2}
+.stats-3d .stats{gap:1.5rem;align-items:start}
+.stats-3d .stat{
+  position:relative;background:rgba(255,255,255,.72);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:2.6rem 1.4rem 2.2rem;will-change:transform;
+  transition:box-shadow .35s;
+}
+.stats-3d .stat:hover{box-shadow:0 30px 60px -30px var(--accent)}
+.stats-3d .stat b{font-size:clamp(2.2rem,4.3vw,4.2rem);white-space:nowrap}
+.stats-3d .stat b .plus{display:inline-block;animation:plusPulse 2.4s var(--ease-in-out) infinite}
+@keyframes plusPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+.stats-3d .stat-shadow{
+  position:absolute;left:12%;right:12%;bottom:-14px;height:22px;border-radius:50%;
+  background:radial-gradient(50% 100% at 50% 0,rgba(54,69,79,.18),transparent 70%);
+}
+@media (max-width:760px){
+  .stats-3d .stats{grid-template-columns:1fr 1fr;gap:1rem}
+  .stats-3d .stat{padding:1.8rem 1rem 1.6rem}
+}
+
+
+/* ---------- mobile nav: always visible, solid ---------- */
+@media (max-width:900px){
+  .nav{background:rgba(250,250,247,.94);backdrop-filter:blur(10px);box-shadow:0 1px 0 var(--line)}
+  .nav.hidden{transform:none}
+  :root{--nav-h:64px}
+  .nav .brand img{height:34px}
 }
