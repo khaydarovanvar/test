@@ -101,6 +101,7 @@
 
   globe.position.x = small ? 0 : 2.3;
   globe.rotation.z = 0.18;
+  if (small) { globe.scale.setScalar(0.78); globe.position.y = -1.1; }
   scene.add(globe);
 
   /* particles — subject-colored constellation */
@@ -207,8 +208,9 @@
     return new THREE.MeshStandardMaterial(Object.assign({ color: new THREE.Color(hex), roughness: .35, metalness: .1 }, opts || {}));
   }
   var objs = [];
+  var narrow = window.innerWidth < 760 ? 0.42 : 1;
   function add(mesh, x, y, s, rs) {
-    mesh.position.set(x, y, -1.5 - Math.random() * 2);
+    mesh.position.set(x * narrow, y, -1.5 - Math.random() * 2);
     mesh.scale.setScalar(s);
     mesh.userData.rs = rs;
     scene.add(mesh); objs.push(mesh);
@@ -429,7 +431,9 @@
 
   var COLORS = ['#F4364C', '#0050B5', '#26D07C', '#FF8200', '#00B5E2', '#D9027D', '#FFB81C'];
   var objs = [];
+  var narrow = window.innerWidth < 760 ? 0.42 : 1;
   function wire(geo, hex, x, y, z, s) {
+    x *= narrow;
     var m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
       color: new THREE.Color(hex), wireframe: true, transparent: true, opacity: 0.35
     }));
@@ -438,6 +442,7 @@
     scene.add(m); objs.push(m);
   }
   function solid(geo, hex, x, y, z, s) {
+    x *= narrow;
     var m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
       color: new THREE.Color(hex), roughness: .4, metalness: .05, flatShading: true
     }));
