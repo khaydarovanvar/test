@@ -30,32 +30,79 @@
 
   /* ---------------- preloader ---------------- */
   var pre = document.querySelector('.preloader');
-  var firstVisit = !sessionStorage.getItem('stemco-seen');
+  var firstVisit = true;
+  try { firstVisit = !sessionStorage.getItem('stemco-seen'); } catch (e) {}
+  var preActive = !!pre && firstVisit && !reduced && hasGsap;
   function releasePreloader() {
     if (!pre) return;
     pre.classList.add('done');
-    sessionStorage.setItem('stemco-seen', '1');
+    try { sessionStorage.setItem('stemco-seen', '1'); } catch (e) {}
     document.body.style.overflow = '';
-    setTimeout(function () { pre.remove(); }, 1000);
+    setTimeout(function () { if (pre) { pre.remove(); pre = null; } }, 700);
   }
-  if (pre) {
-    if (reduced || !hasGsap || !firstVisit) {
-      releasePreloader();
-    } else {
-      document.body.style.overflow = 'hidden';
-      var n = { v: 0 };
-      var numEl = pre.querySelector('.n');
-      var tl = gsap.timeline({ onComplete: releasePreloader });
-      tl.from('.preloader .bar-s', { scaleY: 0, duration: .5, ease: 'power3.out' }, 0)
-        .from('.preloader .bar-m', { scaleY: 0, duration: .5, ease: 'power3.out' }, .15)
-        .from('.preloader .fig',   { scaleY: 0, duration: .55, ease: 'power3.out' }, .3)
-        .from('.preloader .head',  { scale: 0, transformOrigin: 'center', duration: .6, ease: 'elastic.out(1,.45)' }, .55)
-        .to(n, {
-          v: 100, duration: 1.15, ease: 'power2.inOut',
-          onUpdate: function () { if (numEl) numEl.textContent = Math.round(n.v); }
-        }, 0);
+  if (pre && !preActive) releasePreloader();
+  if (preActive) {
+    document.body.style.overflow = 'hidden';
+    var numEl = pre.querySelector('.n');
+    var barEl = pre.querySelector('.pre-bar i');
+    var n = { v: 0 };
+    var pageLoaded = document.readyState === 'complete';
+    if (!pageLoaded) window.addEventListener('load', function () { pageLoaded = true; }, { once: true });
+    function setN() {
+      var v = Math.round(n.v);
+      if (numEl) numEl.textContent = v;
+      if (barEl) barEl.style.width = n.v + '%';
+    }
+    gsap.timeline()
+      .from('.preloader .bar-s', { scaleY: 0, duration: .5, ease: 'power3.out' }, .1)
+      .from('.preloader .bar-m', { scaleY: 0, duration: .5, ease: 'power3.out' }, .25)
+      .from('.preloader .fig',   { scaleY: 0, duration: .55, ease: 'power3.out' }, .4)
+      .from('.preloader .head',  { scale: 0, transformOrigin: 'center', duration: .6, ease: 'elastic.out(1,.45)' }, .65)
+      .from('.pre-word span',    { yPercent: 130, duration: .7, ease: 'power4.out', stagger: .045 }, .45)
+      .from('.pre-slogan',       { opacity: 0, y: 24, duration: .5, ease: 'power2.out' }, .9);
+    // counter crawls to 90%, waits for the real load event (max +1s), sprints to 100, then the curtain lifts
+    gsap.to(n, {
+      v: 90, duration: 1.6, ease: 'power2.out', onUpdate: setN,
+      onComplete: function () {
+        var t0 = Date.now();
+        (function poll() {
+          if (pageLoaded || Date.now() - t0 > 1000) {
+            gsap.to(n, { v: 100, duration: .35, ease: 'power2.inOut', onUpdate: setN, onComplete: exitPre });
+          } else setTimeout(poll, 80);
+        })();
+      }
+    });
+    function exitPre() {
+      gsap.timeline({ onComplete: releasePreloader })
+        .to('.pre-core', { yPercent: -16, opacity: 0, duration: .45, ease: 'power3.in' }, 0)
+        .to(['.pre-count', '.pre-slogan', '.pre-bar'], { opacity: 0, duration: .3, ease: 'power2.in' }, .05)
+        .to('.pre-panels span', { yPercent: -103, duration: .8, ease: 'power4.inOut', stagger: .06 }, .3);
     }
   }
+
+  /* ---------------- enter veil (after a page transition) ---------------- */
+  var entering = document.documentElement.classList.contains('is-entering');
+  try { sessionStorage.removeItem('stemco-wipe'); } catch (e) {}
+  if (entering && (reduced || !hasGsap)) {
+    document.documentElement.classList.remove('is-entering');
+    entering = false;
+  } else if (entering) {
+    var veil = document.createElement('div');
+    veil.className = 'veil';
+    veil.innerHTML = '<span></span><span></span><span></span><span></span><span></span>';
+    document.body.appendChild(veil);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        document.documentElement.classList.remove('is-entering');
+        gsap.to(veil.querySelectorAll('span'), {
+          yPercent: -103, stagger: .05, duration: .65, ease: 'power4.inOut', delay: .12,
+          onComplete: function () { veil.remove(); }
+        });
+      });
+    });
+  }
+  /* delay for entrance animations of elements already in view */
+  var introDelay = preActive ? 2.55 : (entering ? .45 : 0);
 
   /* ---------------- custom cursor ---------------- */
   if (!touch && !reduced) {
@@ -129,22 +176,60 @@
     });
   });
 
-  /* ---------------- page transition wipe ---------------- */
+  /* ---------------- page transitions (site-wide wipe) ---------------- */
   var wipe = document.createElement('div');
   wipe.className = 'wipe';
-  wipe.innerHTML = '<img class="wipe-icon" src="' + (document.body.dataset.root || '') + 'assets/img/logo/icon_stemco_128x128.png" alt="">';
+  wipe.innerHTML = '<span></span><span></span><span></span><span></span><span></span>' +
+    '<img class="wipe-icon" src="' + (document.body.dataset.root || '') + 'assets/img/logo/icon_stemco_128x128.png" alt="">';
   document.body.appendChild(wipe);
-  document.querySelectorAll('a[data-transition]').forEach(function (a) {
-    a.addEventListener('click', function (e) {
-      if (reduced || !hasGsap || e.metaKey || e.ctrlKey) return;
-      e.preventDefault();
-      var href = a.getAttribute('href');
-      var color = a.getAttribute('data-transition');
-      if (color) wipe.style.background = color;
-      gsap.timeline({ onComplete: function () { window.location.href = href; } })
-        .to(wipe, { y: '0%', duration: .55, ease: 'power3.inOut', startAt: { y: '101%' } })
-        .to('.wipe-icon', { opacity: 1, duration: .2 }, '-=.2');
-    });
+  var wipePanels = wipe.querySelectorAll('span');
+  var wiping = false;
+  function internalHref(a) {
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#') return null;
+    if (a.target && a.target !== '_self') return null;
+    if (a.hasAttribute('download')) return null;
+    if (/^(mailto:|tel:|javascript:|https?:|\/\/)/i.test(href)) return null;
+    return href;
+  }
+  document.addEventListener('click', function (e) {
+    if (reduced || !hasGsap || wiping) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    var a = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) return;
+    var href = internalHref(a);
+    if (!href) return;
+    var url;
+    try { url = new URL(href, location.href); } catch (err) { return; }
+    if (url.pathname === location.pathname && url.hash) {
+      // same page — smooth-scroll to the anchor instead of reloading
+      var el = document.querySelector(url.hash);
+      if (el) { e.preventDefault(); scrollTo(el); }
+      return;
+    }
+    e.preventDefault();
+    wiping = true;
+    var color = a.getAttribute('data-transition');
+    wipePanels.forEach(function (s) { s.style.background = color || ''; });
+    try { sessionStorage.setItem('stemco-wipe', color || '1'); } catch (err) {}
+    wipe.classList.add('on');
+    gsap.timeline({ onComplete: function () { window.location.href = href; } })
+      .fromTo(wipePanels, { yPercent: 103 },
+        { yPercent: 0, stagger: .055, duration: .5, ease: 'power4.inOut' })
+      .to('.wipe-icon', { opacity: 1, duration: .25, ease: 'power2.out' }, '-=.15');
+  }, true);
+  /* back/forward cache: reset any covering layers so the page is usable */
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    wiping = false;
+    wipe.classList.remove('on');
+    if (hasGsap) {
+      gsap.set(wipePanels, { yPercent: 103 });
+      gsap.set('.wipe-icon', { opacity: 0 });
+    }
+    document.documentElement.classList.remove('is-entering');
+    var v = document.querySelector('.veil');
+    if (v) v.remove();
   });
 
   /* ---------------- split text ---------------- */
@@ -158,8 +243,10 @@
     el.classList.add('split');
     el.innerHTML = out.join(' ');
     gsap.set(el.querySelectorAll('.c'), { rotateX: -85 });
+    var inView = el.getBoundingClientRect().top < window.innerHeight;
     gsap.to(el.querySelectorAll('.c'), {
       y: 0, rotateX: 0, duration: 1, ease: 'power4.out', stagger: .022,
+      delay: inView ? introDelay : 0,
       scrollTrigger: { trigger: el, start: 'top 88%' }
     });
   });
@@ -167,9 +254,10 @@
   /* ---------------- reveals ---------------- */
   if (hasGsap && !reduced) {
     document.querySelectorAll('[data-reveal]').forEach(function (el, i) {
+      var inView = el.getBoundingClientRect().top < window.innerHeight;
       gsap.to(el, {
         opacity: 1, y: 0, duration: .9, ease: 'power3.out',
-        delay: (el.dataset.reveal | 0) * 0.09,
+        delay: (el.dataset.reveal | 0) * 0.09 + (inView ? introDelay : 0),
         scrollTrigger: { trigger: el, start: 'top 90%' }
       });
     });

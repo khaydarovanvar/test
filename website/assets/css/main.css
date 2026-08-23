@@ -18,7 +18,7 @@
   --accent-soft:rgba(244,54,76,.09);
   --font-body:'Roboto',system-ui,-apple-system,sans-serif;
   --font-display:'Roboto Slab',Georgia,serif;
-  --font-hand:'Covered By Your Grace',cursive;
+  --font-hand:'Covered By Your Grace','Caveat',cursive;
   --ease-out:cubic-bezier(.22,1,.36,1);
   --ease-in-out:cubic-bezier(.65,0,.35,1);
   --nav-h:78px;
@@ -76,21 +76,45 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 .no-js .split .c,.reduced .split .c{transform:none}
 
 /* ---------- preloader ---------- */
-.preloader{
-  position:fixed;inset:0;z-index:1000;background:var(--charcoal);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
-  transition:transform .9s var(--ease-in-out);
+.preloader{position:fixed;inset:0;z-index:1400;overflow:hidden;color:#fff}
+.preloader.done{opacity:0;visibility:hidden;transition:opacity .6s,visibility 0s .6s}
+.pre-panels{position:absolute;inset:0;display:flex}
+.pre-panels span{flex:1;background:#232f38;will-change:transform}
+.pre-panels span:nth-child(2n){background:#28353f}
+.pre-core{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1.8rem;
 }
-.preloader.done{transform:translateY(-101%)}
-.preloader svg{width:min(150px,30vw);height:auto}
+.preloader svg{width:min(132px,26vw);height:auto}
 .preloader .bar-s,.preloader .bar-m,.preloader .fig,.preloader .head{
   fill:var(--amaranth);transform-origin:bottom center;
 }
-.preloader .count{
-  font-family:var(--font-display);font-weight:800;font-size:1.1rem;color:#fff;
-  display:flex;align-items:baseline;gap:.6rem;
+.pre-word{
+  display:flex;font-family:var(--font-display);font-weight:900;
+  font-size:clamp(1.5rem,4vw,2.4rem);letter-spacing:.4em;margin-left:.4em;
+  overflow:hidden;
 }
-.preloader .count .hand{color:var(--amaranth);font-size:1.5rem}
+.pre-word span{display:inline-block;will-change:transform}
+.pre-slogan{
+  position:absolute;left:4vw;bottom:6vh;max-width:60vw;
+  font-size:clamp(1.5rem,3vw,2.2rem);color:var(--amaranth);
+}
+.pre-count{
+  position:absolute;right:4vw;bottom:4.5vh;line-height:.85;
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(4.5rem,15vw,10rem);letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;
+}
+.pre-count .pct{font-size:.32em;color:var(--amaranth);margin-left:.06em}
+.pre-bar{position:absolute;left:0;bottom:0;width:100%;height:3px;background:rgba(255,255,255,.12)}
+.pre-bar i{display:block;height:100%;width:0;background:var(--amaranth)}
+
+/* enter veil — covers the page before first paint after a wipe navigation */
+html.is-entering::before{
+  content:"";position:fixed;inset:0;z-index:1300;background:var(--veil,#232f38);
+}
+.veil{position:fixed;inset:0;z-index:1300;pointer-events:none;display:flex}
+.veil span{flex:1;background:var(--veil,#232f38);will-change:transform}
 
 /* ---------- cursor ---------- */
 .cursor,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:999;border-radius:50%}
@@ -547,8 +571,10 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 @media (max-width:900px){.footer-grid{grid-template-columns:1fr 1fr}}
 
 /* ---------- transition wipe ---------- */
-.wipe{position:fixed;inset:0;z-index:400;pointer-events:none;transform:translateY(101%);background:var(--accent)}
-.wipe .wipe-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:110px;opacity:0}
+.wipe{position:fixed;inset:0;z-index:1300;pointer-events:none;display:flex;visibility:hidden}
+.wipe.on{visibility:visible;pointer-events:auto}
+.wipe span{flex:1;background:var(--wipec,#232f38);transform:translateY(103%);will-change:transform}
+.wipe .wipe-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:96px;opacity:0}
 
 /* ---------- reveal defaults (JS adds motion) ---------- */
 [data-reveal]{opacity:0;transform:translateY(46px);will-change:transform,opacity}
@@ -568,7 +594,8 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
 
 /* ---------- print ---------- */
 @media print{
-  .wipe,.preloader,.cursor,.cursor-ring,.lightbox,.menu-overlay,.burger,.scroll-hint{display:none!important}
+  .wipe,.veil,.preloader,.cursor,.cursor-ring,.lightbox,.menu-overlay,.burger,.scroll-hint{display:none!important}
+  html.is-entering::before{display:none!important}
   .nav{position:static}
   [data-reveal]{opacity:1!important;transform:none!important}
   .hero{min-height:auto;padding:3rem 0}
@@ -986,3 +1013,31 @@ h1,h2,h3,.display{font-family:var(--font-display);line-height:1.04;color:inherit
   .nav .brand img.subj-brand{height:46px}
   .subj3d-bg{opacity:.45}
 }
+
+/* ---- language switcher ---- */
+.lang{display:flex;gap:.3rem;align-items:center;margin-right:.9rem}
+.lang a{
+  font:600 .68rem/1 var(--font-body);letter-spacing:.1em;
+  padding:.42rem .55rem;border:1px solid rgba(54,69,79,.28);border-radius:999px;
+  color:var(--charcoal);transition:background .25s,color .25s,border-color .25s;
+}
+.lang a:hover{border-color:var(--amaranth);color:var(--amaranth)}
+.lang a.on{background:var(--charcoal);color:#fff;border-color:var(--charcoal);pointer-events:none}
+.section--dark .lang a,.menu-overlay .lang a{color:rgba(238,242,244,.8);border-color:rgba(238,242,244,.3)}
+.lang--menu{margin:0;gap:.45rem;flex-wrap:wrap}
+.lang--menu a{font-size:.78rem;letter-spacing:.04em;padding:.5rem .8rem;color:rgba(238,242,244,.85);border-color:rgba(238,242,244,.28)}
+.lang--menu a:hover{border-color:#fff;color:#fff}
+.lang--menu a.on{background:var(--amaranth);border-color:var(--amaranth);color:#fff}
+@media (max-width:640px){
+  .lang{margin-right:.5rem}
+  .lang a{padding:.36rem .45rem;font-size:.62rem}
+}
+@media (max-width:420px){
+  .nav .lang{display:none} /* switcher lives in the menu overlay on the smallest screens */
+}
+
+/* ---- localized CSS strings ---- */
+html[lang="ru"] .partners-globe::after{content:"✦ вращайте глобус"}
+html[lang="kk"] .partners-globe::after{content:"✦ глобусты айналдырыңыз"}
+html[lang="ru"] .menu-overlay::before{content:"Меню"}
+html[lang="kk"] .menu-overlay::before{content:"Мәзір"}

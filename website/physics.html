@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){try{var c=sessionStorage.getItem('stemco-wipe');if(c&&!/[?&]noanim/.test(location.search)){document.documentElement.classList.add('is-entering');if(c!=='1')document.documentElement.style.setProperty('--veil',c);}}catch(e){}})();</script>
 <title>STEMCO Physics — International Physics Competition | STEMCO</title>
 <meta name="description" content="STEMCO Physics is an international Olympiad-style Physics competition within the STEMCO framework. Motion, energy, waves, light — every question start…">
 <meta property="og:title" content="STEMCO Physics — International Physics Competition | STEMCO">
@@ -12,23 +13,31 @@
 <meta name="theme-color" content="#36454F">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/img/logo/icon_stemco_32x32.png">
 <link rel="apple-touch-icon" href="assets/img/logo/icon_stemco_128x128.png">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;700;800;900&family=Covered+By+Your+Grace&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@500;700;800;900&family=Covered+By+Your+Grace&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/main.css">
 
+<link rel="alternate" hreflang="en" href="https://www.stemco.org/physics.html"><link rel="alternate" hreflang="ru" href="https://www.stemco.org/ru/physics.html"><link rel="alternate" hreflang="kk" href="https://www.stemco.org/kk/physics.html"><link rel="alternate" hreflang="x-default" href="https://www.stemco.org/physics.html">
 </head>
 <body data-theme="phy">
 <div class="preloader" aria-hidden="true">
-  <svg viewBox="0 0 512 512" role="img" aria-label="STEMCO">
-    <rect class="bar-s" x="48" y="338" width="78" height="118" rx="24"/>
-    <path class="bar-m" d="M187 455c-9 0-15-7-14-17l4-150c-1-18 5-28 20-31 12-3 24 0 32 2 8 2 18 0 26-3 13-5 22 6 21 21l-8 161c0 10-7 17-16 17z"/>
-    <circle class="head" cx="362" cy="110" r="52"/>
-    <path class="fig" d="M315 206c-13 30-15 58-10 86 11 64 37 132 51 158 5 9 18 9 22-1 14-49 34-119 46-164 11-40 22-75 31-95 8-15 9-32-1-39-10-7-21 0-29 12-18 23-46 34-74 36-15 1-29 1-36 7z"/>
-  </svg>
-  <div class="count"><span class="n">0</span>% <span class="hand">From Singapore to the World!</span></div>
+  <div class="pre-panels"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="pre-core">
+    <svg viewBox="0 0 512 512" role="img" aria-label="STEMCO">
+      <rect class="bar-s" x="48" y="338" width="78" height="118" rx="24"/>
+      <path class="bar-m" d="M187 455c-9 0-15-7-14-17l4-150c-1-18 5-28 20-31 12-3 24 0 32 2 8 2 18 0 26-3 13-5 22 6 21 21l-8 161c0 10-7 17-16 17z"/>
+      <circle class="head" cx="362" cy="110" r="52"/>
+      <path class="fig" d="M315 206c-13 30-15 58-10 86 11 64 37 132 51 158 5 9 18 9 22-1 14-49 34-119 46-164 11-40 22-75 31-95 8-15 9-32-1-39-10-7-21 0-29 12-18 23-46 34-74 36-15 1-29 1-36 7z"/>
+    </svg>
+    <div class="pre-word"><span>S</span><span>T</span><span>E</span><span>M</span><span>C</span><span>O</span></div>
+  </div>
+  <div class="pre-slogan"><span class="hand">From Singapore to the World!</span></div>
+  <div class="pre-count"><span class="n">0</span><span class="pct">%</span></div>
+  <div class="pre-bar"><i></i></div>
 </div><header class="nav"><div class="container">
 <a class="brand" href="index.html" aria-label="STEMCO home"><img class="subj-brand" src="assets/img/logo/logo_physico.png" alt="STEMCO"></a>
 <div class="nav-mid" aria-hidden="true"><span class="hand">From Singapore to the World!</span></div>
 <div class="nav-right">
+<div class="lang" aria-label="Language"><a href="physics.html" hreflang="en" class="on">EN</a><a href="ru/physics.html" hreflang="ru">RU</a><a href="kk/physics.html" hreflang="kk">KZ</a></div>
 <a class="nav-cta" href="register.html">Register<span class="arr">→</span></a>
 <button class="burger" aria-label="Open menu" aria-expanded="false"><span class="burger-label">Menu</span><span class="burger-lines"><span></span><span></span></span></button>
 </div>
@@ -43,12 +52,13 @@
 <a class="m-link" href="index.html#events"><span class="m-num">06</span><span class="m-txt" data-text="Media">Media</span></a></div><div class="m-item" style="--i:6">
 <a class="m-link" href="index.html#prices"><span class="m-num">07</span><span class="m-txt" data-text="Pricing">Pricing</span></a></div><div class="m-item" style="--i:7">
 <a class="m-link" href="rules.html"><span class="m-num">08</span><span class="m-txt" data-text="Rules">Rules</span></a></div><div class="m-item" style="--i:8">
-<a class="m-link" href="global-final-2026.html"><span class="m-num">09</span><span class="m-txt" data-text="Global Final">Global Final</span></a><span class="m-sub"><a href="global-final-2026.html" style="--sc:#F4364C">2026/27 · Singapore</a><a href="program.html" style="--sc:#26D07C">The Program</a><a href="global-final-2025.html" style="--sc:#FFB81C">2025 · Recap</a></span></div><div class="m-item" style="--i:9">
+<a class="m-link" href="global-final-2026.html"><span class="m-num">09</span><span class="m-txt" data-text="Global Final">Global Final</span></a><span class="m-sub"><a href="global-final-2026.html" style="--sc:#F4364C">2026/27 · Singapore</a><a href="global-final-2026.html#program" style="--sc:#26D07C">The Program</a><a href="global-final-2025.html" style="--sc:#FFB81C">2025 · Recap</a></span></div><div class="m-item" style="--i:9">
 <a class="m-link" href="register.html"><span class="m-num">10</span><span class="m-txt" data-text="Interest form">Interest form</span></a></div></nav>
 <div class="menu-meta">
   <div><h5>Head office</h5><p>168 Changi Road #04-01<br>419730 Singapore</p></div>
   <div><h5>Contact</h5><p><a href="mailto:bestyourself@stemco.org">bestyourself@stemco.org</a><br><a href="tel:+6589928320">+65 8992 8320</a></p></div>
   <div><h5>Follow</h5><p><a href="https://youtube.com/@stemco_global" target="_blank" rel="noopener">YouTube ↗</a><br><a href="https://stemco.tech" target="_blank" rel="noopener">stemco.tech ↗</a></p></div>
+  <div><h5>Language</h5><div class="lang lang--menu"><a href="physics.html" hreflang="en" class="on">Engl&#105;sh</a><a href="ru/physics.html" hreflang="ru">Русский</a><a href="kk/physics.html" hreflang="kk">Қазақша</a></div></div>
   <div class="menu-slogan hand">From Singapore to the World!</div>
 </div>
 </div></div>
@@ -198,4 +208,4 @@
 <div class="lightbox" role="dialog" aria-modal="true" aria-label="Video player">
   <button class="close" aria-label="Close">✕</button>
   <div class="frame"></div>
-</div><script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script><script defer src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script><script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script defer src="assets/js/main.js"></script><script defer src="assets/js/hero3d.js"></script></body></html>
+</div><script defer src="assets/vendor/gsap.min.js"></script><script defer src="assets/vendor/ScrollTrigger.min.js"></script><script defer src="assets/vendor/lenis.min.js"></script><script defer src="assets/vendor/three.min.js"></script><script defer src="assets/js/main.js"></script><script defer src="assets/js/hero3d.js"></script></body></html>
