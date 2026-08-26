@@ -50,3 +50,20 @@ signature and seal as the landscape set — print PDF + 300 dpi PNG each.
   are separate layers, so certificates can be re-issued or re-worded directly.
 - `svg/` — fully editable vector sources (open in Illustrator, Figma or
   Inkscape; text is live text referencing the same fonts).
+
+
+## Competition sets (English season 2026)
+
+| Set | Folder | Event line | Date | Tiers |
+|-----|--------|-----------|------|-------|
+| Global Final | `./` + `portrait/` | StemCo Global Finals, English 2026 | 22 November 2026 | Gold, Silver, Bronze, Absolute Champion, Honorable Mention, Mentor |
+| Qualifying Round 1 | `qualifying-round-1/` | StemCo Qualifying Round 1, English 2026 | 29 August 2026 | Gold, Silver, Bronze, Honorable Mention |
+| Qualifying Round 2 | `qualifying-round-2/` | StemCo Qualifying Round 2, English 2026 | 26 September 2026 | Gold, Silver, Bronze, Honorable Mention |
+
+The seal on every certificate is the **official uploaded stamp image** (exact,
+pixel-for-pixel, background removed), signed over the printed motto
+"From Singapore to the World!". Qualifying Round designs carry a large round
+number ("1" / "2") in the border tile (landscape) and the hero band (portrait).
+Absolute Champion and Mentor exist only for the Global Final; say the word if
+the qualifying rounds need them too. PSDs and SVGs for all 28 certificates are
+in `psd/` and `svg/` (prefixes `gf-`, `qr1-`, `qr2-`).
