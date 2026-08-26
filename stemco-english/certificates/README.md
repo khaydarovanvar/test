@@ -30,3 +30,13 @@ medal badge straddling the band edge, clean editorial body with a watermark quot
 and confetti margins, the "From Singapore to the World!" script, and a patchwork
 footer frieze (bolt · hello! · comb · stemco). Same six tiers, same wording,
 signature and seal as the landscape set — print PDF + 300 dpi PNG each.
+
+## Print quality
+
+- The red STEMCO seal is redrawn as pure vector art (crisp at any size); the
+  chairman's signature is the authentic scan at native resolution on a
+  transparent layer.
+- `*.pdf` — final size A4, full bleed, vector text.
+- `*.bleed.pdf` — professional print variant with 3 mm bleed on every side
+  (303×216 mm landscape / 216×303 mm portrait); ask the print shop to trim to A4.
+- `*.png` — 300 dpi raster (3508×2480 / 2480×3508).
