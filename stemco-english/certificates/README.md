@@ -40,3 +40,13 @@ signature and seal as the landscape set — print PDF + 300 dpi PNG each.
 - `*.bleed.pdf` — professional print variant with 3 mm bleed on every side
   (303×216 mm landscape / 216×303 mm portrait); ask the print shop to trim to A4.
 - `*.png` — 300 dpi raster (3508×2480 / 2480×3508).
+
+## Editable source files
+
+- `psd/` — layered Photoshop files (300 dpi, RGB). Every design element is a
+  separate layer, and **all wording is on real, editable Photoshop text layers**
+  (Roboto / Roboto Slab / Covered By Your Grace — free Google Fonts; install
+  them locally so Photoshop can re-render the type). The signature and seal
+  are separate layers, so certificates can be re-issued or re-worded directly.
+- `svg/` — fully editable vector sources (open in Illustrator, Figma or
+  Inkscape; text is live text referencing the same fonts).
