@@ -67,3 +67,18 @@ number ("1" / "2") in the border tile (landscape) and the hero band (portrait).
 Absolute Champion and Mentor exist only for the Global Final; say the word if
 the qualifying rounds need them too. PSDs and SVGs for all 28 certificates are
 in `psd/` and `svg/` (prefixes `gf-`, `qr1-`, `qr2-`).
+
+
+## Quality
+
+Every certificate is **100% vector** — the background art, all text, the medal,
+the logo, the chairman's signature and the official seal are all drawn as
+curves, with no bitmap anywhere in the file. Verified: the PDFs contain zero
+embedded raster images.
+
+- `*.pdf` — the best-quality file. Resolution-independent: prints razor sharp
+  at A4, A3, poster size, anything.
+- `*.bleed.pdf` — same, with 3 mm bleed for professional trimming.
+- `*.png` — 300 dpi (3508x2480 / 2480x3508) for everyday use.
+- 600 dpi PNGs (7016x4960) are available on request for print shops that
+  require a high-resolution raster instead of vector.
