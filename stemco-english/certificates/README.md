@@ -1,0 +1,84 @@
+# STEMCO English — Certificate Set (Global Finals, English 2026)
+
+Six print-ready A4 landscape certificates (300 dpi PNG + vector-text PDF), designed
+in the STEMCO English identity — Bright Cyan Blue PANTONE 306 C (#00B5E2) — with
+the geometric tile-collage style of the brand and English-themed motifs
+(letters, quotation marks, speech bubble, exclamation/question marks).
+
+| # | File | Award | Title bar |
+|---|------|-------|-----------|
+| 1 | `1-GOLD` | Gold Medal | Certificate of Achievement |
+| 2 | `2-SILVER` | Silver Medal | Certificate of Achievement |
+| 3 | `3-BRONZE` | Bronze Medal | Certificate of Achievement |
+| 4 | `4-ABSOLUTE-CHAMPION` | Absolute Champion | Certificate of Distinction |
+| 5 | `5-HONORABLE-MENTION` | Honorable Mention | Certificate of Achievement |
+| 6 | `6-MENTOR` | — | Certificate of Appreciation |
+
+- Blank name / category lines for handwriting or overprinting, matching the
+  existing STEMCO certificate sets.
+- Signature (Sarvar Khaidarov, Chairman) and the red STEMCO seal are carried
+  over from the approved print set.
+- Colors: cyan #00B5E2 · deep cyan #0079A8 · petrol #1D4956 · tint #A8E4F4 ·
+  charcoal #36454F · amaranth #F4364C, plus per-tier metal accents.
+- Fonts: Roboto / Roboto Slab / Covered By Your Grace (brand set).
+
+## Portrait series (`portrait/`)
+
+A second, portrait A4 design with its own composition: cyan hero band (arch with
+the STEMCO figure, giant quotation mark, ribbon wave, `abc` script), a tier-colored
+medal badge straddling the band edge, clean editorial body with a watermark quote
+and confetti margins, the "From Singapore to the World!" script, and a patchwork
+footer frieze (bolt · hello! · comb · stemco). Same six tiers, same wording,
+signature and seal as the landscape set — print PDF + 300 dpi PNG each.
+
+## Print quality
+
+- The red STEMCO seal is redrawn as pure vector art (crisp at any size); the
+  chairman's signature is the authentic scan at native resolution on a
+  transparent layer.
+- `*.pdf` — final size A4, full bleed, vector text.
+- `*.bleed.pdf` — professional print variant with 3 mm bleed on every side
+  (303×216 mm landscape / 216×303 mm portrait); ask the print shop to trim to A4.
+- `*.png` — 300 dpi raster (3508×2480 / 2480×3508).
+
+## Editable source files
+
+- `psd/` — layered Photoshop files (300 dpi, RGB). Every design element is a
+  separate layer, and **all wording is on real, editable Photoshop text layers**
+  (Roboto / Roboto Slab / Covered By Your Grace — free Google Fonts; install
+  them locally so Photoshop can re-render the type). The signature and seal
+  are separate layers, so certificates can be re-issued or re-worded directly.
+- `svg/` — fully editable vector sources (open in Illustrator, Figma or
+  Inkscape; text is live text referencing the same fonts).
+
+
+## Competition sets (English season 2026)
+
+| Set | Folder | Event line | Date | Tiers |
+|-----|--------|-----------|------|-------|
+| Global Final | `./` + `portrait/` | StemCo Global Finals, English 2026 | 22 November 2026 | Gold, Silver, Bronze, Absolute Champion, Honorable Mention, Mentor |
+| Qualifying Round 1 | `qualifying-round-1/` | StemCo Qualifying Round 1, English 2026 | 29 August 2026 | Gold, Silver, Bronze, Honorable Mention |
+| Qualifying Round 2 | `qualifying-round-2/` | StemCo Qualifying Round 2, English 2026 | 26 September 2026 | Gold, Silver, Bronze, Honorable Mention |
+
+The seal on every certificate is the **official uploaded stamp image** (exact,
+pixel-for-pixel, background removed), signed over the printed motto
+"From Singapore to the World!". Qualifying Round designs carry a large round
+number ("1" / "2") in the border tile (landscape) and the hero band (portrait).
+Absolute Champion and Mentor exist only for the Global Final; say the word if
+the qualifying rounds need them too. PSDs and SVGs for all 28 certificates are
+in `psd/` and `svg/` (prefixes `gf-`, `qr1-`, `qr2-`).
+
+
+## Quality
+
+Every certificate is **100% vector** — the background art, all text, the medal,
+the logo, the chairman's signature and the official seal are all drawn as
+curves, with no bitmap anywhere in the file. Verified: the PDFs contain zero
+embedded raster images.
+
+- `*.pdf` — the best-quality file. Resolution-independent: prints razor sharp
+  at A4, A3, poster size, anything.
+- `*.bleed.pdf` — same, with 3 mm bleed for professional trimming.
+- `*.png` — 300 dpi (3508x2480 / 2480x3508) for everyday use.
+- 600 dpi PNGs (7016x4960) are available on request for print shops that
+  require a high-resolution raster instead of vector.
